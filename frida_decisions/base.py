@@ -48,6 +48,25 @@ class BaseJudge:
                                      self.config.yes_no_default_criteria)
         return parsed, candidates, tokenize(candidates, self.text, self.config, self.state_max)
 
+    def token_counts(self, request: dict) -> dict:
+        """Encoder input sizes for one request, without running the model.
+
+        naive:  one `[state][question][option]` sequence per candidate;
+        packed: the packed rows (state repeated once per row);
+        cached: the state once plus question/option rows (state-cache path).
+        """
+        from .packing import layout_rows
+
+        _, _, tok = self.compile(request)
+        cfg = self.config
+        state = len(tok.state)
+        naive = sum(state + len(tok.questions[q]) + len(body) for q, body in tok.options)
+        packed_rows = layout_rows(tok, state, cfg.max_options_per_row, cfg.max_row_tokens)
+        cached_rows = layout_rows(tok, 0, cfg.max_options_per_row, cfg.max_row_tokens)
+        return {"candidates": len(tok.options), "state_tokens": state, "naive": naive,
+                "packed": sum(state + len(r.ids) for r in packed_rows), "packed_rows": len(packed_rows),
+                "cached": state + sum(len(r.ids) for r in cached_rows), "cached_rows": len(cached_rows)}
+
     def __call__(self, request: dict, calibration: Calibration | None = None) -> dict:
         return self.judge(request, calibration)
 
