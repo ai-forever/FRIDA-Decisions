@@ -20,7 +20,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 
 THREADS = int(os.environ.get("FD_THREADS", "6"))
 MODEL_DIR = Path(os.environ.get("FD_MODEL_DIR", ROOT / "_export" / "FRIDA-Decisions"))

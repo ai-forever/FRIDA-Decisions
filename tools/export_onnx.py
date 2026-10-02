@@ -204,5 +204,5 @@ def main():
 
 
 if __name__ == "__main__":
-    os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+    os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
     main()
