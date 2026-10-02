@@ -20,6 +20,8 @@ tags:
 
 # FRIDA-Decisions
 
+**[Code on GitHub](https://github.com/ai-forever/FRIDA-Decisions)** · **[Demo](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions)** · **[Benchmark: razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka)** · **[Colab quickstart](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb)**
+
 **FRIDA-Decisions** makes structured decisions over Russian text in a single encoder pass: pick one of K options, place a text on an ordinal scale, answer yes / no, or rank candidates. The options are written as text inside the request, so a new label set is a new JSON, not a new training run. No generation, no output tokens, no parsing: every answer is one of the declared options, with its confidence.
 
 It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 encoder, 823M parameters) and runs on a consumer GPU.
