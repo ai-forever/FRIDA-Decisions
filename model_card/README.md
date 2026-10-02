@@ -101,8 +101,6 @@ Texts up to 512 tokens are the recommended range.
 
 ¹ 140 of 735 texts exceed open-jev's input window and count as random answers; on the other 595 it scores 0.565.
 
-**RuDecide** (track B, mean accuracy over tasks, their `score.py`): TODO.
-
 **Packing**, RTX 5060 Ti, bf16, same model, one sequence per option vs packed with the state cache:
 
 | scenario | candidates | tokens, naive / packed | time, naive / packed |
