@@ -167,11 +167,11 @@ vllm serve ai-forever/FRIDA-Decisions \
   --no-enable-chunked-prefill --enforce-eager --max-model-len 2048
 ```
 
-In Docker (Linux, or Windows with WSL2):
+In Docker (Linux, or Windows with WSL2); the vLLM image has no `git`, so the package comes as the release archive:
 
 ```bash
 docker run --gpus all --ipc=host -p 8000:8000 --entrypoint bash vllm/vllm-openai:v0.29.0 -c \
-  'pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0" && exec vllm serve ai-forever/FRIDA-Decisions --hf-overrides "{\"architectures\": [\"FridaDecisionsModel\"]}" --io-processor-plugin frida_decisions --no-enable-chunked-prefill --enforce-eager --max-model-len 2048'
+  'pip install "frida-decisions[vllm] @ https://github.com/ai-forever/FRIDA-Decisions/archive/refs/tags/v0.2.0.tar.gz" && exec vllm serve ai-forever/FRIDA-Decisions --hf-overrides "{\"architectures\": [\"FridaDecisionsModel\"]}" --io-processor-plugin frida_decisions --no-enable-chunked-prefill --enforce-eager --max-model-len 2048'
 ```
 
 A request is the same JSON as for `Judge`, under `data`; the response `data` is what `Judge` returns:
