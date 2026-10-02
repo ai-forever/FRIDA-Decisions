@@ -83,7 +83,7 @@ Texts up to 512 tokens are the recommended range.
 
 ## Benchmarks
 
-**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. All models are run on the same requests and scored with the same script ([razvilka_eval.py](https://huggingface.co/datasets/artemsnegirev/razvilka)).
+**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. All models are run on the same requests and scored with the same script ([razvilka_eval.py](https://github.com/ai-forever/frida-decisions/tree/main/benchmarks/razvilka)).
 
 | model | parameters | accuracy |
 |---|--:|--:|
