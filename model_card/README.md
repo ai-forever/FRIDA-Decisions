@@ -114,7 +114,7 @@ Texts up to 512 tokens are the recommended range.
 * 1.42M examples (1.5M questions) over 151 question types in eight domains: relevance and RAG grounding, NLI and fact checking, moderation and safety, agents and tool choice, topic classification, sentiment and emotion, LLM request routing, intents and customer support.
 * 71% Russian, 29% English; mostly human or naturally labelled data, about a quarter with LLM-generated text or model labels; instruction wordings augmented with paraphrases.
 * LoRA rank 16 on the attention projections (q, k, v, o) of all 24 layers plus a scalar head, 4.7M trainable parameters; merged into the weights in this release. Listwise softmax for `choice` / `ranking`, pairwise BCE for `noul`.
-* One epoch, 49.6 hours on a single RTX 5060 Ti (8 GB).
+* One epoch, with a compute budget comparable to about 50 hours of a single consumer GPU (RTX 5060 Ti class).
 
 ## Files
 
