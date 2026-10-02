@@ -15,11 +15,18 @@ __all__ = [
 
 
 def __getattr__(name):
-    # Backends are imported lazily: the ONNX path must work without torch.
+    # Backends are imported lazily: each one needs only its own extra.
     if name == "Judge":
-        from .torch_backend import Judge
+        try:
+            from .torch_backend import Judge
+        except ImportError as error:
+            raise ImportError("Judge needs PyTorch: pip install 'frida-decisions[torch]'") from error
         return Judge
     if name == "OnnxJudge":
+        try:
+            import onnxruntime  # noqa: F401
+        except ImportError as error:
+            raise ImportError("OnnxJudge needs onnxruntime: pip install 'frida-decisions[onnx]'") from error
         from .onnx_backend import OnnxJudge
         return OnnxJudge
     raise AttributeError(name)

@@ -13,17 +13,16 @@ requires-python = ">=3.10"
 authors = [{ name = "ai-forever" }]
 dependencies = [
     "numpy>=1.24",
-    "torch>=2.1",
-    "transformers>=4.40",
-    "safetensors>=0.4",
     "tokenizers>=0.15",
+    "safetensors>=0.4",
     "huggingface_hub>=0.20",
 ]
 
 [project.optional-dependencies]
+torch = ["torch>=2.1", "transformers>=4.40"]
 onnx = ["onnxruntime>=1.17"]
-export = ["onnx>=1.15", "onnxruntime>=1.17"]
-dev = ["pytest>=7", "onnx>=1.15", "onnxruntime>=1.17"]
+export = ["torch>=2.1", "transformers>=4.40", "onnx>=1.15", "onnxruntime>=1.17"]
+dev = ["pytest>=7", "torch>=2.1", "transformers>=4.40", "onnx>=1.15", "onnxruntime>=1.17"]
 
 [project.urls]
 Repository = "https://github.com/ai-forever/frida-decisions"

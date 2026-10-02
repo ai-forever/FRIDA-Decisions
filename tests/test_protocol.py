@@ -66,5 +66,26 @@ def test_aggregate_shapes():
     assert decision(answers["s"]) == "0" and 0 < answers["s"]["score"] < 1
     assert math.isclose(answers["n"][YES_NO], 1 / (1 + math.exp(-2.0)))   # true 1.0 vs false -1.0
     assert decision(answers["n"]) is True
-    assert answers["r"]["ranking"] == ["d2", "d1", "d3"]       # ties keep the caller's order
+    assert answers["r"]["ranking"] == ["d2", "d1", "d3"]       # tie d1/d3 broken by key
     assert math.isclose(sum(answers["r"]["probabilities"].values()), 1.0)
+
+
+def test_exact_ties_go_to_the_smallest_key():
+    """Tie-breaking does not depend on the order the options were listed in."""
+    request = parse_request({"state": "s", "questions": {
+        "c": {"type": "choice", "instructions": "i", "criteria": {"zeta": "z", "beta": "b", "alpha": "a"}},
+        "s": {"type": "score", "instructions": "i", "criteria": ["l0", "l1", "l2"]},
+        "n": {"type": YES_NO, "instructions": "i"},
+        "r": {"type": "ranking", "instructions": "i", "criteria": {"k9": "x", "k10": "y", "k2": "z"}},
+    }})
+    cands = compile_request(request)
+    margins = [1.0, 2.0, 2.0,        # choice: beta and alpha tie at the top
+               0.0, 3.0, 3.0,        # score: levels 1 and 2 tie
+               0.7, 0.7,             # yes/no: exact tie
+               4.0, 4.0, 4.0]        # ranking: all equal
+    answers = aggregate(request, cands, margins)
+    assert answers["c"]["choice"] == "alpha" and decision(answers["c"]) == "alpha"
+    assert decision(answers["s"]) == "1"
+    assert answers["n"][YES_NO] == 0.5 and decision(answers["n"]) is False
+    assert answers["r"]["ranking"] == ["k10", "k2", "k9"]      # string order, as the keys are strings
+    assert decision(answers["r"]) == "k10"

@@ -248,10 +248,10 @@ def aggregate(request: Request, candidates: list[Candidate], margins: list[float
         keys = (list(question.criteria) if question.type in (CHOICE, RANKING)
                 else [str(i) for i in range(len(p))])
         if question.type == RANKING:
-            # Best first; equal margins keep the caller's order. `probabilities`
-            # is a share of one unit among these candidates, not the probability
-            # that a candidate is relevant (several may be).
-            order = sorted(range(len(p)), key=lambda i: (-scored[i][1], i))
+            # Best first; equal margins are ordered by key (see `best_key`).
+            # `probabilities` is a share of one unit among these candidates, not
+            # the probability that a candidate is relevant (several may be).
+            order = sorted(range(len(p)), key=lambda i: (-scored[i][1], keys[i]))
             answers[qid] = {"type": RANKING,
                             RANKING: [keys[i] for i in order],
                             "scores": {keys[i]: scored[i][1] for i in range(len(p))},
@@ -262,7 +262,7 @@ def aggregate(request: Request, candidates: list[Candidate], margins: list[float
                   "probabilities": dict(zip(keys, p)),
                   "confidence": confidence(p)}
         if question.type == CHOICE:
-            answer[CHOICE] = keys[max(range(len(p)), key=p.__getitem__)]
+            answer[CHOICE] = best_key(keys, [m for _, m in scored])
         else:
             # The expected level under the distribution, on the 0..N-1 scale.
             answer[SCORE] = math.fsum(i * value for i, value in enumerate(p))
@@ -271,11 +271,20 @@ def aggregate(request: Request, candidates: list[Candidate], margins: list[float
     return answers
 
 
+def best_key(keys, values) -> str:
+    """The key with the largest value; an exact tie goes to the lexicographically
+    smallest key (compared as strings), so a decision never depends on the order
+    in which the options were listed."""
+    top = max(values)
+    return min(str(k) for k, v in zip(keys, values) if v == top)
+
+
 def decision(answer: dict):
     """The headline of an answer, without the probabilities around it.
 
-    choice -> the chosen id; yes/no -> bool; score -> the most probable level;
-    ranking -> the best candidate's id.
+    choice -> the chosen id; yes/no -> bool (exactly 0.5 counts as no);
+    score -> the most probable level as a string key; ranking -> the best
+    candidate's id. Exact ties go to the smallest key (`best_key`).
     """
     kind = answer["type"]
     if kind == CHOICE:
@@ -285,4 +294,4 @@ def decision(answer: dict):
     if kind == RANKING:
         return answer[RANKING][0]
     probabilities = answer["probabilities"]
-    return max(probabilities, key=probabilities.get)
+    return best_key(list(probabilities), list(probabilities.values()))

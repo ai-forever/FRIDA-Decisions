@@ -6,17 +6,18 @@
 * **Packed, not repeated.** Questions and options sit next to one copy of the text; a typical request is a single encoder call, and a 243-intent catalog is still one request.
 * **Order-independent by construction.** Options never attend to each other, so adding, removing or reordering options does not change any other option's margin.
 * **Exact state cache.** The text is encoded once and its keys/values are reused across rows and repeated requests — the same margins, less compute.
-* **Runs anywhere.** PyTorch on GPU or CPU, or an int8 ONNX model on CPU without torch.
+* **GPU or CPU.** PyTorch on GPU or CPU, or an int8 ONNX model for CPU that does not need torch.
 
 ## Install
 
 ```bash
-pip install "frida-decisions @ git+https://github.com/ai-forever/frida-decisions"
-# with the ONNX runtime for the int8 CPU backend:
+# PyTorch backend (GPU or CPU)
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/frida-decisions"
+# int8 ONNX backend for CPU, without torch
 pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/frida-decisions"
 ```
 
-Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
+The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, or both). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
 
 ## Quickstart
 
@@ -134,9 +135,11 @@ For the 243-intent example in [`examples/data/intent_catalog.json`](examples/dat
 
 | backend | install | where | notes |
 |---|---|---|---|
-| `Judge` (PyTorch) | base package | GPU (bf16) or CPU (fp32) | packing + exact state cache |
-| `OnnxJudge` (ONNX Runtime) | `[onnx]` extra | CPU | int8 weights, per-token int8 activations; packing via graph inputs, no state cache |
+| `Judge` (PyTorch) | `[torch]` | GPU (bf16) or CPU (fp32) | packing + exact state cache |
+| `OnnxJudge` (ONNX Runtime) | `[onnx]` | CPU | int8, packing via graph inputs, no state cache |
 | vLLM plugin | — | GPU | coming |
+
+The ONNX model is for CPU only. Its weights are int8 (one scale per output channel) and its activations are quantised to int8 on the fly, with one scale per token, while the decision head stays in float32. Quantisation changes the margins: on the 122 decisions of the test set, the ONNX model agrees with PyTorch float32 on 120, and the largest margin difference is 0.65. Where every decision matters, use the PyTorch backend.
 
 ```python
 from frida_decisions import OnnxJudge
@@ -185,7 +188,7 @@ onnx/model_int8_pertoken.onnx   int8 graph for OnnxJudge (1.17 GiB)
 ## Tests
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev]"            # torch, transformers, onnx, onnxruntime, pytest
 python tools/export_model.py --checkpoint <adapter folder> --out _export/FRIDA-Decisions
 python tools/export_onnx.py --model-dir _export/FRIDA-Decisions
 pytest -s
