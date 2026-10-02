@@ -43,7 +43,13 @@ response["answers"]["team"]["choice"]     # "auth"
 response["answers"]["angry"]["noul"]      # probability of "yes"
 ```
 
-`judge_batch([...])` scores several requests together. More in [`examples/quickstart.py`](examples/quickstart.py) and the notebook [`notebooks/quickstart.ipynb`](notebooks/quickstart.ipynb) — run it in Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb)
+Several independent requests (different texts) can go in one call; you get one response per request, in the same order, with the same answers as calling `judge` on each:
+
+```python
+responses = judge.judge_batch([request_1, request_2, request_3])
+```
+
+More in [`examples/quickstart.py`](examples/quickstart.py) and the notebook [`notebooks/quickstart.ipynb`](notebooks/quickstart.ipynb) — run it in Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb)
 
 ## Request and response
 
