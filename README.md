@@ -206,12 +206,12 @@ The checks live in [`tests/`](tests) and [`tools/`](tools) (results are written 
 | ONNX int8 vs PyTorch float32 | 120/122 same decisions (98.4%), max margin drift 0.65 |
 | ONNX int8 (CPU) vs PyTorch bf16 (GPU) on razvilka | 726/735 same decisions; accuracy 0.891 vs 0.893 (`tools/release_eval.py`) |
 | CPU latency, one request: 384-token state, 3 questions (8 options), 6 threads, background load | PyTorch fp32 2.28 s, ONNX int8 0.88 s (about 2.5x), `tools/cpu_latency_ab.py` |
-| GPU latency, one request: ~400-token state, RTX 5060 Ti, bf16 | 28.2 ms with 1 question, 34.0 ms with 3 questions (`tools/release_eval.py`) |
+| GPU latency, one request: ≈400-token state, RTX 5060 Ti, bf16 | 28.2 ms with 1 question, 34.0 ms with 3 questions (`tools/release_eval.py`) |
 | peak GPU memory allocated by PyTorch over the razvilka run (without the CUDA context) | 1.8 GiB |
 | vLLM backend arithmetic (CPU, float32, simulated paged cache) vs PyTorch float32 | same decisions on 9 requests, cold and with the state from the cache, max margin drift 5.2e-06 (`tests/test_vllm_backend.py`) |
 | vLLM server (bf16, GPU) vs PyTorch bf16 (GPU) on razvilka | accuracy 0.890 vs 0.893 (654 vs 656 of 735, `tools/release_eval.py --vllm`): the 2 items where they differ are near-ties in float32 (top-two margin gaps 0.053 and 0.008), and PyTorch bf16 lands on the float32 side. The margin error from float32 is the same size for both over all 3,762 options — median 0.017 / 0.017, p95 0.066 / 0.067, p99 0.108 / 0.102 (vLLM / PyTorch) — and the same with the text read from the cache |
-| vLLM server throughput, requests in flight | razvilka (735 requests, ~260 tokens each), 8 in flight: 60.8 requests/s; short tickets (640 requests, ~190 tokens, `examples/vllm_client.py --burst 640`): 81 with 8 in flight, 90 with 16 |
-| vLLM server latency, one client over HTTP: ~400-token state, RTX 5060 Ti, bf16 | 40 ms with 1 question, 44 ms with 3; 34 / 30 ms when the text is already cached |
+| vLLM server throughput, requests in flight | razvilka (735 requests, ≈260 tokens each), 8 in flight: 60.8 requests/s; short tickets (640 requests, ≈190 tokens, `examples/vllm_client.py --burst 640`): 81 with 8 in flight, 90 with 16 |
+| vLLM server latency, one client over HTTP: ≈400-token state, RTX 5060 Ti, bf16 | 40 ms with 1 question, 44 ms with 3; 34 / 30 ms when the text is already cached |
 | accuracy on razvilka (735 items) | 0.893 (PyTorch bf16, GPU), see the model card |
 
 GPU parity with the CPU path was smoke-tested on 15 decisions (`tools/gpu_parity.py`, all equal); the razvilka run above is the larger check.

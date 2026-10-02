@@ -20,16 +20,17 @@ tags:
 
 # FRIDA-Decisions
 
-**[Code on GitHub](https://github.com/ai-forever/FRIDA-Decisions)** · **[Demo](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions)** · **[Benchmark: razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka)** · **[Colab quickstart](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb)**
+**[Code on GitHub](https://github.com/ai-forever/FRIDA-Decisions)** · **[Demo](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions)** · **[Benchmark: razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka)** · **[Colab quickstart](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb)** · **[vLLM server](#vllm-server)**
 
 **FRIDA-Decisions** makes structured decisions over Russian text in a single encoder pass: pick one of K options, place a text on an ordinal scale, answer yes / no, or rank candidates. The options are written as text inside the request, so a new label set is a new JSON, not a new training run. No generation, no output tokens, no parsing: every answer is one of the declared options, with its confidence.
 
 It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 encoder, 823M parameters) and runs on a consumer GPU.
 
 * **razvilka.** 0.893 on [razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka) (735 items); TypeSafe Jev, a commercial API, scores 0.897 on the same items (paired McNemar p = 0.84). The highest among the open models we ran on razvilka.
-* **Fast.** 28–34 ms per request on an RTX 5060 Ti (a ~400-token text, 1–3 questions), in process; conditions in the latency table below.
+* **Fast.** 28–34 ms per request on an RTX 5060 Ti (a ≈400-token text, 1–3 questions), in process; conditions in the latency table below.
 * **Light.** 1.8 GiB allocated by PyTorch at peak over the whole razvilka run, plus the CUDA context; an int8 ONNX build runs on CPU.
 * **Packing.** All options of all questions share one sequence and the text is encoded once; with the state cache a follow-up question about the same text costs only its own tokens. A catalog of 243 intents is answered in 0.44 s, against 4.65 s for one sequence per option.
+* **Serving.** A [vLLM server](#vllm-server) batches requests from many users and keeps the texts it has read in its prefix cache: about 60 requests/s on one RTX 5060 Ti with 8 requests in flight.
 
 ## Quickstart
 
@@ -72,15 +73,29 @@ print(judge.judge(request)["answers"])
 
 CPU without PyTorch: `pip install "frida-decisions[onnx] @ git+..."` and `OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions")` — int8 weights and per-token int8 activations; it scores 0.891 on razvilka (the same decision as the GPU model on 726 of 735 items), and a 384-token request with 3 questions takes about 0.9 s on 6 CPU threads, roughly 2.5x faster than fp32.
 
-**vLLM server** (Linux, GPU): `pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"`, then
+Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) · evaluation on razvilka [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/benchmarks/razvilka/run_razvilka.ipynb)
+
+## vLLM server
+
+For many users at once (Linux, GPU). The server batches requests together and keeps the texts it has read in vLLM's prefix cache, so a follow-up question about a text costs only its own tokens.
 
 ```bash
+pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
 vllm serve ai-forever/FRIDA-Decisions   --hf-overrides '{"architectures": ["FridaDecisionsModel"]}'   --io-processor-plugin frida_decisions   --no-enable-chunked-prefill --enforce-eager --max-model-len 2048
 ```
 
-`POST /pooling` with the request under `data` returns what `Judge` returns ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.2.0/examples/vllm_client.py)). The server batches requests from many users and keeps the texts it has read in vLLM's prefix cache, so a follow-up question about a text costs only its own tokens. Roughly, on one RTX 5060 Ti (bf16, vLLM 0.29, the command above plus `--gpu-memory-utilization 0.45` — the card also drives a display — client on the same machine, after warm-up; the first request after a start takes about 0.3 s): 25–45 ms per request (a short ticket to a ~400-token text, 1–3 questions), 25–35 ms for a follow-up question about a text the server has already read, about 0.33 s for one request choosing among 243 intents (its 16 rows share the text within one step), and, with 8 requests in flight, about 60 requests/s on razvilka-sized requests (~260 tokens) and about 80 on short tickets (~190 tokens). On razvilka (735 items; server started with `FRIDA_DECISIONS_STATE_MAX=512`, the state cut of the PyTorch run) it gets 654 right against 656 for PyTorch bf16 (0.890 and 0.893); the two items where they differ are near-ties in fp32, and PyTorch bf16 lands on the fp32 side.
+`POST /pooling` with the request under `data` returns the same response as `Judge` ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.2.0/examples/vllm_client.py)).
 
-Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) · evaluation on razvilka [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/benchmarks/razvilka/run_razvilka.ipynb)
+| one RTX 5060 Ti, bf16, vLLM 0.29 | |
+|---|--:|
+| one request: a short ticket to a ≈400-token text, 1–3 questions | 25–45 ms |
+| a follow-up question about a text the server has already read | 25–35 ms |
+| one request choosing among 243 intents | ≈0.33 s |
+| 8 requests in flight, razvilka-sized requests (≈260 tokens) | ≈60 requests/s |
+| 8 requests in flight, short tickets (≈190 tokens) | ≈80 requests/s |
+| razvilka, 735 items (`FRIDA_DECISIONS_STATE_MAX=512`, as in the PyTorch run) | 0.890 (PyTorch bf16: 0.893) |
+
+Measured with the command above plus `--gpu-memory-utilization 0.45` (the card also drives a display), client on the same machine, after warm-up; the first request after a start takes about 0.3 s. vLLM and PyTorch differ on 2 razvilka items, both near-ties in fp32.
 
 ## Question types
 
@@ -118,8 +133,8 @@ Texts up to 512 tokens are the recommended range.
 
 | hardware | request | time |
 |---|---|--:|
-| RTX 5060 Ti, bf16 | ~400-token state, 1 question (3 options) | 28.2 ms |
-| RTX 5060 Ti, bf16 | ~400-token state, 3 questions (8 options) | 34.0 ms |
+| RTX 5060 Ti, bf16 | ≈400-token state, 1 question (3 options) | 28.2 ms |
+| RTX 5060 Ti, bf16 | ≈400-token state, 3 questions (8 options) | 34.0 ms |
 | CPU, 6 threads, PyTorch fp32 | 384-token state, 3 questions (8 options) | 2.28 s |
 | CPU, 6 threads, ONNX int8 | 384-token state, 3 questions (8 options) | 0.88 s |
 
