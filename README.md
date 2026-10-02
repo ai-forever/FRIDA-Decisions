@@ -41,7 +41,7 @@ response["answers"]["team"]["choice"]     # "auth"
 response["answers"]["angry"]["noul"]      # probability of "yes"
 ```
 
-`judge_batch([...])` scores several requests together. More in [`examples/quickstart.py`](examples/quickstart.py) and the Colab-ready notebook [`notebooks/quickstart.ipynb`](notebooks/quickstart.ipynb).
+`judge_batch([...])` scores several requests together. More in [`examples/quickstart.py`](examples/quickstart.py) and the notebook [`notebooks/quickstart.ipynb`](notebooks/quickstart.ipynb) — run it in Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/v0.1.0/notebooks/quickstart.ipynb)
 
 ## Request and response
 

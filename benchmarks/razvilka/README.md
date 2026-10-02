@@ -3,7 +3,7 @@
 Scorer and notebook for the [razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka) benchmark: 735 Russian items, 15 tasks, four question types.
 
 * `razvilka_eval.py` — single-file scorer, standard library only (`datasets` only to load from the Hub). Accuracy overall, per type and per task; argmax ties go to the lexicographically smallest option key.
-* `run_razvilka.ipynb` — loads the data, runs FRIDA-Decisions, scores it next to a lexical baseline and chance, and shows an adapter template for any other model.
+* `run_razvilka.ipynb` [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/v0.1.0/benchmarks/razvilka/run_razvilka.ipynb) — loads the data, runs FRIDA-Decisions, scores it next to a lexical baseline and chance, and shows an adapter template for any other model.
 
 ```python
 import razvilka_eval as rz
