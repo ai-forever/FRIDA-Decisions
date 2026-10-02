@@ -150,7 +150,7 @@ judge(request)          # same request and response format
 
 ### Measured
 
-All numbers come from this repository's tests ([`tests/`](tests)), run on CPU in float32 unless noted. The 36-request set is the 9 requests in `tests/` plus 27 longer demo requests (routing, tool choice, moderation, support triage, a 243-intent catalog, 100-passage ranking); of those, only the intent catalog ships in `examples/data/`.
+The checks live in [`tests/`](tests) and [`tools/`](tools) (results are written locally to `tests/_results/`, which is not committed); CPU and float32 unless noted. The 36-request set is the 9 requests in `tests/` plus 27 longer demo requests (routing, tool choice, moderation, support triage, a 243-intent catalog, 100-passage ranking); of those, only the intent catalog ships in `examples/data/`.
 
 | check | result |
 |---|---|
@@ -159,11 +159,13 @@ All numbers come from this repository's tests ([`tests/`](tests)), run on CPU in
 | state cache vs packed rows | same decisions on 36 requests, max margin drift 6.7e-06 |
 | packed rows vs one sequence per option | max margin drift 5.7e-06 on 9 requests |
 | ONNX int8 vs PyTorch float32 | 120/122 same decisions (98.4%), max margin drift 0.65 |
-| CPU latency, one request: 384-token state, 3 questions (8 options), 6 threads | PyTorch fp32 2.28 s, ONNX int8 0.88 s (x2.6), `tools/cpu_latency_ab.py` |
-| GPU latency, one request: 317-token state, 3 questions (8 options), RTX 5060 Ti, bf16 | 28.3 ms (`tools/gpu_parity.py`) |
-| accuracy on razvilka (735 items) | 0.890, see the model card |
+| ONNX int8 (CPU) vs PyTorch bf16 (GPU) on razvilka | 726/735 same decisions; accuracy 0.891 vs 0.893 (`tools/release_eval.py`) |
+| CPU latency, one request: 384-token state, 3 questions (8 options), 6 threads, background load | PyTorch fp32 2.28 s, ONNX int8 0.88 s (about 2.5x), `tools/cpu_latency_ab.py` |
+| GPU latency, one request: ~400-token state, RTX 5060 Ti, bf16 | 28.2 ms with 1 question, 34.0 ms with 3 questions (`tools/release_eval.py`) |
+| peak GPU memory over the razvilka run | 1.8 GB |
+| accuracy on razvilka (735 items) | 0.893 (PyTorch bf16, GPU), see the model card |
 
-On the GPU a request takes about 30–45 ms: besides the 28.3 ms above, an earlier measurement on the same architecture (RTX 5060 Ti, bf16, 384-token state) gave 31.9 ms with one question and 44.5 ms with three.
+GPU parity with the CPU path was smoke-tested on 15 decisions (`tools/gpu_parity.py`, all equal); the razvilka run above is the larger check.
 
 ## Limits
 

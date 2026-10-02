@@ -24,9 +24,9 @@ tags:
 
 It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 encoder, 823M parameters) and runs on a consumer GPU.
 
-* **razvilka.** 0.890 on [razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka) (735 items); TypeSafe Jev, a commercial API, scores 0.897 on the same items (paired McNemar p = 0.68). The highest among the open models we ran on razvilka.
-* **Fast.** About 30–45 ms per request on an RTX 5060 Ti, in process; exact conditions in the latency table below.
-* **Cheap to run.** 4.3 GiB of GPU memory at peak; an int8 ONNX build runs on CPU.
+* **razvilka.** 0.893 on [razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka) (735 items); TypeSafe Jev, a commercial API, scores 0.897 on the same items (paired McNemar p = 0.84). The highest among the open models we ran on razvilka.
+* **Fast.** 28–34 ms per request on an RTX 5060 Ti (a ~400-token text, 1–3 questions), in process; conditions in the latency table below.
+* **Light.** 1.8 GB of GPU memory at peak over the whole razvilka run; an int8 ONNX build runs on CPU.
 * **Packing.** All options of all questions share one sequence and the text is encoded once; with the state cache a follow-up question about the same text costs only its own tokens. A catalog of 243 intents is answered in 0.44 s, against 4.65 s for one sequence per option.
 
 ## Quickstart
@@ -68,7 +68,7 @@ request = {
 print(judge.judge(request)["answers"])
 ```
 
-CPU without PyTorch: `pip install "frida-decisions[onnx] @ git+..."` and `OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions")` — int8 weights and per-token int8 activations; its decisions agree with the fp32 model on 120 of 122 test decisions, and a 384-token request with 3 questions takes 0.88 s on 6 CPU threads (2.6x faster than fp32).
+CPU without PyTorch: `pip install "frida-decisions[onnx] @ git+..."` and `OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions")` — int8 weights and per-token int8 activations; it scores 0.891 on razvilka (the same decision as the GPU model on 726 of 735 items), and a 384-token request with 3 questions takes about 0.9 s on 6 CPU threads, roughly 2.5x faster than fp32.
 
 ## Question types
 
@@ -83,12 +83,13 @@ Texts up to 512 tokens are the recommended range.
 
 ## Benchmarks
 
-**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. All models are run on the same requests and scored with the same script ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.1.0/benchmarks/razvilka)).
+**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.1.0/benchmarks/razvilka)).
 
 | model | parameters | accuracy |
 |---|--:|--:|
 | TypeSafe Jev (commercial API) | — | 0.897 |
-| **FRIDA-Decisions** | 823M | **0.890** |
+| **FRIDA-Decisions** | 823M | **0.893** |
+| FRIDA-Decisions, int8 ONNX on CPU | 823M | 0.891 |
 | smolnikov/migom-2b | 1.9B | 0.853 |
 | Mapika/decider-2b | 1.9B | 0.833 |
 | smolnikov/kivok-0.3b | 0.3B | 0.619 |
@@ -99,19 +100,18 @@ Texts up to 512 tokens are the recommended range.
 | lexical baseline | — | 0.333 |
 | chance | — | 0.257 |
 
-¹ 140 of 735 texts exceed open-jev's input window and count as random answers; on the other 595 it scores 0.565.
+¹ 140 of 735 texts exceed open-jev's input window and get no answer from it and count as ties; on the other 595 it scores 0.565.
 
 **Latency**, one request, single stream, in process:
 
 | hardware | request | time |
 |---|---|--:|
-| RTX 5060 Ti, bf16 | 384-token state, 1 question | 31.9 ms² |
-| RTX 5060 Ti, bf16 | 384-token state, 3 questions | 44.5 ms² |
-| RTX 5060 Ti, bf16 | 317-token state, 3 questions (8 options) | 28.3 ms |
+| RTX 5060 Ti, bf16 | ~400-token state, 1 question (3 options) | 28.2 ms |
+| RTX 5060 Ti, bf16 | ~400-token state, 3 questions (8 options) | 34.0 ms |
 | CPU, 6 threads, PyTorch fp32 | 384-token state, 3 questions (8 options) | 2.28 s |
-| CPU, 6 threads, ONNX int8 | 384-token state, 3 questions (8 options) | 0.88 s (x2.6) |
+| CPU, 6 threads, ONNX int8 | 384-token state, 3 questions (8 options) | 0.88 s |
 
-² An earlier measurement on the same architecture; the other rows were measured on the released weights.
+GPU rows: median of 30 requests after warm-up, timing parsing, tokenisation, packing and the forward pass. CPU rows were measured on a machine with background load; the ratio between them (about 2.5x) is the stable part.
 
 **Packing**, RTX 5060 Ti, bf16, same model, one sequence per option vs packed with the state cache:
 
@@ -123,8 +123,8 @@ Texts up to 512 tokens are the recommended range.
 
 ## Training
 
-* 1.42M examples (1.5M questions) over 151 question types in eight domains: relevance and RAG grounding, NLI and fact checking, moderation and safety, agents and tool choice, topic classification, sentiment and emotion, LLM request routing, intents and customer support.
-* 71% Russian, 29% English; mostly human or naturally labelled data, about a quarter with LLM-generated text or model labels; instruction wordings augmented with paraphrases.
+* 1.42M examples (1.5M questions) over 151 question types; by our grouping they fall into eight domains: relevance and RAG grounding, NLI and fact checking, moderation and safety, agents and tool choice, topic classification, sentiment and emotion, LLM request routing, intents and customer support.
+* 71% Russian, 29% English; mostly human or naturally labelled data, roughly a quarter (our estimate) with LLM-generated text or model labels; instruction wordings augmented with paraphrases.
 * LoRA rank 16 on the attention projections (q, k, v, o) of all 24 layers plus a scalar head, 4.7M trainable parameters; merged into the weights in this release. Listwise softmax for `choice` / `ranking`, pairwise BCE for `noul`.
 * One epoch, with a compute budget comparable to about 50 hours of a single consumer GPU (RTX 5060 Ti class).
 
