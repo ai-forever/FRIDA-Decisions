@@ -5,7 +5,7 @@ from .config import DecisionsConfig
 from .constants import DEFAULT_REPO_ID, PRODUCT_NAME, QuestionType
 from .protocol import Calibration, RequestError, aggregate, compile_request, decision, parse_request
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "PRODUCT_NAME", "DEFAULT_REPO_ID", "QuestionType", "DecisionsConfig",

@@ -12,11 +12,11 @@
 
 ```bash
 # PyTorch backend (GPU or CPU)
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.1.1"
 # int8 ONNX backend for CPU, without torch
-pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
+pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.1.1"
 # vLLM server (GPU, Linux)
-pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
+pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@main"
 ```
 
 The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, `[vllm]`). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
@@ -165,7 +165,7 @@ In Docker (Linux, or Windows with WSL2):
 
 ```bash
 docker run --gpus all --ipc=host -p 8000:8000 --entrypoint bash vllm/vllm-openai:v0.29.0 -c \
-  'pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0" && exec vllm serve ai-forever/FRIDA-Decisions --hf-overrides "{\"architectures\": [\"FridaDecisionsModel\"]}" --io-processor-plugin frida_decisions --no-enable-chunked-prefill --enforce-eager --max-model-len 2048'
+  'pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@main" && exec vllm serve ai-forever/FRIDA-Decisions --hf-overrides "{\"architectures\": [\"FridaDecisionsModel\"]}" --io-processor-plugin frida_decisions --no-enable-chunked-prefill --enforce-eager --max-model-len 2048'
 ```
 
 A request is the same JSON as for `Judge`, under `data`; the response `data` is what `Judge` returns:
@@ -198,7 +198,7 @@ The checks live in [`tests/`](tests) and [`tools/`](tools) (results are written 
 | ONNX int8 (CPU) vs PyTorch bf16 (GPU) on razvilka | 726/735 same decisions; accuracy 0.891 vs 0.893 (`tools/release_eval.py`) |
 | CPU latency, one request: 384-token state, 3 questions (8 options), 6 threads, background load | PyTorch fp32 2.28 s, ONNX int8 0.88 s (about 2.5x), `tools/cpu_latency_ab.py` |
 | GPU latency, one request: ~400-token state, RTX 5060 Ti, bf16 | 28.2 ms with 1 question, 34.0 ms with 3 questions (`tools/release_eval.py`) |
-| peak GPU memory over the razvilka run | 1.8 GB |
+| peak GPU memory allocated by PyTorch over the razvilka run (without the CUDA context) | 1.8 GiB |
 | vLLM backend arithmetic (CPU, float32, simulated paged cache) vs PyTorch float32 | same decisions on 9 requests, cold and with the state from the cache, max margin drift 5.2e-06 (`tests/test_vllm_backend.py`) |
 | vLLM server (bf16, GPU) vs PyTorch bf16 (GPU) on razvilka | accuracy 0.890 vs 0.893 (654 vs 656 of 735, `tools/release_eval.py --vllm`): the 2 items where they differ are near-ties in float32 (top-two margin gaps 0.053 and 0.008), and PyTorch bf16 lands on the float32 side. The margin error from float32 is the same size for both over all 3,762 options — median 0.017 / 0.017, p95 0.066 / 0.067, p99 0.108 / 0.102 (vLLM / PyTorch) — and the same with the text read from the cache |
 | vLLM server throughput on razvilka, 8 requests in flight | 60.8 requests/s |

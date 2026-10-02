@@ -25,6 +25,17 @@ def load_head(folder: Path, d_model: int) -> nn.Linear:
     return head
 
 
+def default_gpu_dtype(device: torch.device) -> torch.dtype:
+    """bfloat16 where the card has it natively (Ampere and newer), else float16.
+
+    Emulated bfloat16 runs, but slowly: a 243-option request takes ~3.9 s on a T4
+    against ~0.4 s on an RTX 5060 Ti.
+    """
+    if device.type == "cuda" and torch.cuda.get_device_capability(device)[0] < 8:
+        return torch.float16
+    return torch.bfloat16
+
+
 class Judge(BaseJudge):
     """Score requests with PyTorch.
 
@@ -57,7 +68,9 @@ class Judge(BaseJudge):
         """Load an exported model folder or Hugging Face repo.
 
         device: "cuda", "cpu" or any torch device; default cuda when available.
-        dtype: default bfloat16 on GPU and float32 on CPU.
+        dtype: default float32 on CPU; on GPU bfloat16, or float16 on cards without
+            native bfloat16 (before Ampere, e.g. a Colab T4). In float16 the FFN output
+            projections stay in float32, as in transformers' T5, or activations overflow.
         state_max: state tokens kept (the rest is cut). Up to 512 is the trained
             range; 384 is the default.
         state_cache_mb: memory budget of the state K/V cache, 0 turns it off.
@@ -68,9 +81,13 @@ class Judge(BaseJudge):
         folder = resolve_model_dir(path_or_repo, _TORCH_FILES, revision)
         device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         if dtype is None:
-            dtype = torch.float32 if device.type == "cpu" else torch.bfloat16
+            dtype = torch.float32 if device.type == "cpu" else default_gpu_dtype(device)
         t5 = T5EncoderModel.from_pretrained(str(folder))
         t5 = t5.to(device=device, dtype=dtype).eval()
+        if dtype == torch.float16:
+            for name, module in t5.named_modules():
+                if name.endswith(".wo"):
+                    module.float()
         head = load_head(folder, t5.config.d_model).to(device)
         return cls(folder, DecisionEncoder(t5, head), device, state_max, state_cache_mb,
                    rows_per_forward)
