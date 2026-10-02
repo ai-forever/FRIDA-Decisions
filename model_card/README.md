@@ -34,7 +34,7 @@ It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 e
 ## Quickstart
 
 ```bash
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.1.1"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
 ```
 
 ```python
@@ -72,13 +72,13 @@ print(judge.judge(request)["answers"])
 
 CPU without PyTorch: `pip install "frida-decisions[onnx] @ git+..."` and `OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions")` — int8 weights and per-token int8 activations; it scores 0.891 on razvilka (the same decision as the GPU model on 726 of 735 items), and a 384-token request with 3 questions takes about 0.9 s on 6 CPU threads, roughly 2.5x faster than fp32.
 
-**vLLM server** (Linux, GPU): `pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@main"`, then
+**vLLM server** (Linux, GPU): `pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"`, then
 
 ```bash
 vllm serve ai-forever/FRIDA-Decisions   --hf-overrides '{"architectures": ["FridaDecisionsModel"]}'   --io-processor-plugin frida_decisions   --no-enable-chunked-prefill --enforce-eager --max-model-len 2048
 ```
 
-`POST /pooling` with the request under `data` returns what `Judge` returns ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/main/examples/vllm_client.py)). The server batches requests from many users and keeps the texts it has read in vLLM's prefix cache, so a follow-up question about a text costs only its own tokens. Roughly, on one RTX 5060 Ti (bf16, vLLM 0.29, the command above plus `--gpu-memory-utilization 0.45` — the card also drives a display — client on the same machine, after warm-up; the first request after a start takes about 0.3 s): 25–45 ms per request (a short ticket to a ~400-token text, 1–3 questions), 25–35 ms for a follow-up question about a text the server has already read, about 0.33 s for one request choosing among 243 intents (its 16 rows share the text within one step), and, with 8 requests in flight, about 60 requests/s on razvilka-sized requests (~260 tokens) and about 80 on short tickets (~190 tokens). On razvilka (735 items; server started with `FRIDA_DECISIONS_STATE_MAX=512`, the state cut of the PyTorch run) it gets 654 right against 656 for PyTorch bf16 (0.890 and 0.893); the two items where they differ are near-ties in fp32, and PyTorch bf16 lands on the fp32 side.
+`POST /pooling` with the request under `data` returns what `Judge` returns ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.2.0/examples/vllm_client.py)). The server batches requests from many users and keeps the texts it has read in vLLM's prefix cache, so a follow-up question about a text costs only its own tokens. Roughly, on one RTX 5060 Ti (bf16, vLLM 0.29, the command above plus `--gpu-memory-utilization 0.45` — the card also drives a display — client on the same machine, after warm-up; the first request after a start takes about 0.3 s): 25–45 ms per request (a short ticket to a ~400-token text, 1–3 questions), 25–35 ms for a follow-up question about a text the server has already read, about 0.33 s for one request choosing among 243 intents (its 16 rows share the text within one step), and, with 8 requests in flight, about 60 requests/s on razvilka-sized requests (~260 tokens) and about 80 on short tickets (~190 tokens). On razvilka (735 items; server started with `FRIDA_DECISIONS_STATE_MAX=512`, the state cut of the PyTorch run) it gets 654 right against 656 for PyTorch bf16 (0.890 and 0.893); the two items where they differ are near-ties in fp32, and PyTorch bf16 lands on the fp32 side.
 
 Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) · evaluation on razvilka [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/benchmarks/razvilka/run_razvilka.ipynb)
 
@@ -95,7 +95,7 @@ Texts up to 512 tokens are the recommended range.
 
 ## Benchmarks
 
-**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.1.1/benchmarks/razvilka)).
+**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.2.0/benchmarks/razvilka)).
 
 | model | parameters | accuracy |
 |---|--:|--:|
