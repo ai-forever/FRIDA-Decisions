@@ -28,7 +28,7 @@ It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 e
 
 * **razvilka.** 0.893 on [razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka) (735 items); TypeSafe Jev, a commercial API, scores 0.897 on the same items (paired McNemar p = 0.84). The highest among the open models we ran on razvilka.
 * **Fast.** 28–34 ms per request on an RTX 5060 Ti (a ~400-token text, 1–3 questions), in process; conditions in the latency table below.
-* **Light.** 1.8 GB of GPU memory at peak over the whole razvilka run; an int8 ONNX build runs on CPU.
+* **Light.** 1.8 GiB allocated by PyTorch at peak over the whole razvilka run, plus the CUDA context; an int8 ONNX build runs on CPU.
 * **Packing.** All options of all questions share one sequence and the text is encoded once; with the state cache a follow-up question about the same text costs only its own tokens. A catalog of 243 intents is answered in 0.44 s, against 4.65 s for one sequence per option.
 
 ## Quickstart

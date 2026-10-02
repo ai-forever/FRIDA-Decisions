@@ -162,7 +162,7 @@ The checks live in [`tests/`](tests) and [`tools/`](tools) (results are written 
 | ONNX int8 (CPU) vs PyTorch bf16 (GPU) on razvilka | 726/735 same decisions; accuracy 0.891 vs 0.893 (`tools/release_eval.py`) |
 | CPU latency, one request: 384-token state, 3 questions (8 options), 6 threads, background load | PyTorch fp32 2.28 s, ONNX int8 0.88 s (about 2.5x), `tools/cpu_latency_ab.py` |
 | GPU latency, one request: ~400-token state, RTX 5060 Ti, bf16 | 28.2 ms with 1 question, 34.0 ms with 3 questions (`tools/release_eval.py`) |
-| peak GPU memory over the razvilka run | 1.8 GB |
+| peak GPU memory allocated by PyTorch over the razvilka run (without the CUDA context) | 1.8 GiB |
 | accuracy on razvilka (735 items) | 0.893 (PyTorch bf16, GPU), see the model card |
 
 GPU parity with the CPU path was smoke-tested on 15 decisions (`tools/gpu_parity.py`, all equal); the razvilka run above is the larger check.
