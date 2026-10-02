@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.10"
-authors = [{ name = "ai-forever" }]
+authors = [{ name = "УЭСМО, SberAI" }]
 dependencies = [
     "numpy>=1.24",
     "tokenizers>=0.15",

@@ -24,7 +24,7 @@ tags:
 
 **FRIDA-Decisions** makes structured decisions over Russian text in a single encoder pass: pick one of K options, place a text on an ordinal scale, answer yes / no, or rank candidates. The options are written as text inside the request, so a new label set is a new JSON, not a new training run. No generation, no output tokens, no parsing: every answer is one of the declared options, with its confidence.
 
-It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 encoder, 823M parameters) and runs on a consumer GPU.
+It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 encoder, 823M parameters) and runs on a consumer GPU. Developed by УЭСМО, SberAI.
 
 * **razvilka.** 0.893 on [razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka) (735 items); TypeSafe Jev, a commercial API, scores 0.897 on the same items (paired McNemar p = 0.84). The highest among the open models we ran on razvilka.
 * **Fast.** 28–34 ms per request on an RTX 5060 Ti (a ≈400-token text, 1–3 questions), in process; conditions in the latency table below.
@@ -168,4 +168,11 @@ MIT. Based on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (MIT).
 
 ## Citation
 
-TODO
+```bibtex
+@misc{frida_decisions_2026,
+  title  = {FRIDA-Decisions},
+  author = {{УЭСМО, SberAI}},
+  year   = {2026},
+  url    = {https://github.com/ai-forever/FRIDA-Decisions}
+}
+```

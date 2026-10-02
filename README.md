@@ -8,6 +8,8 @@
 * **Exact state cache.** The text is encoded once and its keys/values are reused across rows and repeated requests — the same margins, less compute.
 * **GPU or CPU.** PyTorch on GPU or CPU, an int8 ONNX model for CPU that does not need torch, or a vLLM server.
 
+Developed by УЭСМО, SberAI.
+
 ## Install
 
 ```bash
@@ -264,7 +266,7 @@ The base model [FRIDA](https://huggingface.co/ai-forever/FRIDA) is © ai-forever
 ```bibtex
 @misc{frida_decisions_2026,
   title  = {FRIDA-Decisions},
-  author = {TODO},
+  author = {{УЭСМО, SberAI}},
   year   = {2026},
   url    = {https://github.com/ai-forever/FRIDA-Decisions}
 }
