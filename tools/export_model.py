@@ -70,7 +70,7 @@ def load_merged(checkpoint: str | Path, base: str = "ai-forever/FRIDA"):
     config.dropout_rate = 0.0
     model = T5EncoderModel.from_pretrained(base, config=config).float().eval()
     merged = merge_lora_(model, checkpoint)
-    head = torch.load(Path(checkpoint) / "head.pt", map_location="cpu")
+    head = torch.load(Path(checkpoint) / "head.pt", map_location="cpu", weights_only=True)
     return model, {"weight": head["weight"].float().contiguous(),
                    "bias": head["bias"].float().contiguous()}, merged
 

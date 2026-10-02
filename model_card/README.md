@@ -24,8 +24,8 @@ tags:
 
 It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 encoder, 823M parameters) and runs on a consumer GPU.
 
-* **On par with a commercial decision API on Russian.** 0.890 on the [razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka) benchmark against 0.897 for TypeSafe Jev; the difference is not statistically significant (paired McNemar, p = 0.68). Ahead of every open model we measured.
-* **Fast.** 32–45 ms per request on an RTX 5060 Ti (384-token text, 1–3 questions), in process.
+* **razvilka.** 0.890 on [razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka) (735 items); TypeSafe Jev, a commercial API, scores 0.897 on the same items (paired McNemar p = 0.68). The highest among the open models we ran on razvilka.
+* **Fast.** About 30–45 ms per request on an RTX 5060 Ti, in process; exact conditions in the latency table below.
 * **Cheap to run.** 4.3 GiB of GPU memory at peak; an int8 ONNX build runs on CPU.
 * **Packing.** All options of all questions share one sequence and the text is encoded once; with the state cache a follow-up question about the same text costs only its own tokens. A catalog of 243 intents is answered in 0.44 s, against 4.65 s for one sequence per option.
 
@@ -94,12 +94,24 @@ Texts up to 512 tokens are the recommended range.
 | smolnikov/kivok-0.3b | 0.3B | 0.619 |
 | fastino/GLiNER2.5-multi-Decide | 287M | 0.576 |
 | convaiinnovations/laya (multilingual) | — | 0.559 |
-| KaLM-Reranker-V1-Nano | 786M | 0.521 |
+| KaLM-Reranker-V1-Nano-R2 | 786M | 0.521 |
 | open-jev (DeBERTa-v3-large) | 437M | 0.490¹ |
 | lexical baseline | — | 0.333 |
 | chance | — | 0.257 |
 
 ¹ 140 of 735 texts exceed open-jev's input window and count as random answers; on the other 595 it scores 0.565.
+
+**Latency**, one request, single stream, in process:
+
+| hardware | request | time |
+|---|---|--:|
+| RTX 5060 Ti, bf16 | 384-token state, 1 question | 31.9 ms² |
+| RTX 5060 Ti, bf16 | 384-token state, 3 questions | 44.5 ms² |
+| RTX 5060 Ti, bf16 | 317-token state, 3 questions (8 options) | 28.3 ms |
+| CPU, 6 threads, PyTorch fp32 | 384-token state, 3 questions (8 options) | 2.28 s |
+| CPU, 6 threads, ONNX int8 | 384-token state, 3 questions (8 options) | 0.88 s (x2.6) |
+
+² An earlier measurement on the same architecture; the other rows were measured on the released weights.
 
 **Packing**, RTX 5060 Ti, bf16, same model, one sequence per option vs packed with the state cache:
 
