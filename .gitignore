@@ -1,0 +1,18 @@
+# exported model folders and build artefacts
+_export/
+*.onnx
+*.onnx_data
+*.safetensors
+build/
+dist/
+*.egg-info/
+
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.ipynb_checkpoints/
+
+# local test results
+tests/_results/

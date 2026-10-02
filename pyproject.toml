@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "frida-decisions"
+version = "0.1.0"
+description = "Structured decisions over text (choice, score, yes/no, ranking) with one packed encoder pass."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "ai-forever" }]
+dependencies = [
+    "numpy>=1.24",
+    "torch>=2.1",
+    "transformers>=4.40",
+    "safetensors>=0.4",
+    "tokenizers>=0.15",
+    "huggingface_hub>=0.20",
+]
+
+[project.optional-dependencies]
+onnx = ["onnxruntime>=1.17"]
+export = ["onnx>=1.15", "onnxruntime>=1.17"]
+dev = ["pytest>=7", "onnx>=1.15", "onnxruntime>=1.17"]
+
+[project.urls]
+Repository = "https://github.com/ai-forever/frida-decisions"
+Model = "https://huggingface.co/ai-forever/FRIDA-Decisions"
+
+[tool.setuptools]
+packages = ["frida_decisions"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
