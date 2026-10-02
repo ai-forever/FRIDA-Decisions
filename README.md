@@ -185,6 +185,7 @@ r.json()["data"]["answers"]
 
 A fuller client — a follow-up question answered from the cache, the 243-intent catalog, a burst of concurrent requests — is [`examples/vllm_client.py`](examples/vllm_client.py) (standard library only).
 
+* **GPU memory.** vLLM takes 90 % of the GPU by default; on a card that also drives a display pass `--gpu-memory-utilization` (0.45 on an 8 GB card leaves room for the desktop and holds about 9,700 tokens of cache).
 * **Required flags.** The attention is bidirectional, so a text split across scheduler steps would be encoded without seeing its own end: the server refuses to start with chunked prefill on. `--kv-cache-dtype` must stay `auto`, because a cached text is reused bit for bit. `--enforce-eager` is expected (the attention is plain PyTorch).
 * **State cache.** Prefix caching is on by default. A text the server has already read is not encoded again, whether the next request comes from the same user or another one; `usage.cached_tokens` shows it. Each row starts with a hash of the whole text, so a cached block is reused only for the same text, never for another text that starts the same way. `--no-enable-prefix-caching` turns the cache off; pass `cache_salt` in the request body to share cached texts only within one tenant.
 * **Limits.** The packing limits come from `decisions_config.json`; the state is cut at 384 tokens, as in `Judge` (`FRIDA_DECISIONS_STATE_MAX` in the server's environment changes it).
