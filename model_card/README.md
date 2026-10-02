@@ -68,7 +68,7 @@ request = {
 print(judge.judge(request)["answers"])
 ```
 
-CPU without PyTorch: `pip install "frida-decisions[onnx] @ git+..."` and `OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions")` — int8 weights and per-token int8 activations; its decisions agree with the fp32 model on 120 of 122 test decisions.
+CPU without PyTorch: `pip install "frida-decisions[onnx] @ git+..."` and `OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions")` — int8 weights and per-token int8 activations; its decisions agree with the fp32 model on 120 of 122 test decisions, and a 384-token request with 3 questions takes 0.88 s on 6 CPU threads (2.6x faster than fp32).
 
 ## Question types
 

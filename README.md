@@ -159,9 +159,9 @@ All numbers come from this repository's tests ([`tests/`](tests)), run on CPU in
 | state cache vs packed rows | same decisions on 36 requests, max margin drift 6.7e-06 |
 | packed rows vs one sequence per option | max margin drift 5.7e-06 on 9 requests |
 | ONNX int8 vs PyTorch float32 | 120/122 same decisions (98.4%), max margin drift 0.65 |
-| CPU latency, one request: ~384-token state, 3 questions (8 options) | TODO (`pytest tests/test_onnx.py -k latency -s` on an idle machine) |
-| GPU latency and throughput | TODO |
-| task accuracy (benchmarks) | TODO |
+| CPU latency, one request: 384-token state, 3 questions (8 options), 6 threads | PyTorch fp32 2.28 s, ONNX int8 0.88 s (x2.6), `tools/cpu_latency_ab.py` |
+| GPU latency, same request, RTX 5060 Ti, bf16 | 28 ms (`tools/gpu_parity.py`) |
+| accuracy on razvilka (735 items) | 0.890, see the model card |
 
 ## Limits
 
