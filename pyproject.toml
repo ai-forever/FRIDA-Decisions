@@ -25,7 +25,7 @@ export = ["torch>=2.1", "transformers>=4.40", "onnx>=1.15", "onnxruntime>=1.17"]
 dev = ["pytest>=7", "torch>=2.1", "transformers>=4.40", "onnx>=1.15", "onnxruntime>=1.17"]
 
 [project.urls]
-Repository = "https://github.com/ai-forever/frida-decisions"
+Repository = "https://github.com/ai-forever/FRIDA-Decisions"
 Model = "https://huggingface.co/ai-forever/FRIDA-Decisions"
 
 [tool.setuptools]

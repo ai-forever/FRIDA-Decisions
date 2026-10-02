@@ -12,9 +12,9 @@
 
 ```bash
 # PyTorch backend (GPU or CPU)
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/frida-decisions"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.1.0"
 # int8 ONNX backend for CPU, without torch
-pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/frida-decisions"
+pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.1.0"
 ```
 
 The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, or both). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
@@ -210,6 +210,6 @@ The base model [FRIDA](https://huggingface.co/ai-forever/FRIDA) is © ai-forever
   title  = {FRIDA-Decisions},
   author = {TODO},
   year   = {2026},
-  url    = {https://github.com/ai-forever/frida-decisions}
+  url    = {https://github.com/ai-forever/FRIDA-Decisions}
 }
 ```
