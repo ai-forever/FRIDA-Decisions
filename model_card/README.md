@@ -72,6 +72,14 @@ print(judge.judge(request)["answers"])
 
 CPU without PyTorch: `pip install "frida-decisions[onnx] @ git+..."` and `OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions")` — int8 weights and per-token int8 activations; it scores 0.891 on razvilka (the same decision as the GPU model on 726 of 735 items), and a 384-token request with 3 questions takes about 0.9 s on 6 CPU threads, roughly 2.5x faster than fp32.
 
+**vLLM server** (Linux, GPU): `pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@main"`, then
+
+```bash
+vllm serve ai-forever/FRIDA-Decisions   --hf-overrides '{"architectures": ["FridaDecisionsModel"]}'   --io-processor-plugin frida_decisions   --no-enable-chunked-prefill --enforce-eager --max-model-len 2048
+```
+
+`POST /pooling` with the request under `data` returns what `Judge` returns ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/main/examples/vllm_client.py)). The server batches requests from many users and keeps the texts it has read in vLLM's prefix cache, so a follow-up question about a text costs only its own tokens. Roughly, on one RTX 5060 Ti (bf16, vLLM 0.29, client on the same machine, after warm-up): 25–45 ms per request (a short ticket to a ~400-token text, 1–3 questions), about 25 ms for a follow-up question about a text the server has already read, about 0.33 s for the 243-intent catalog, and 60–80 requests/s with 8 requests in flight. On razvilka it scores 0.890 against 0.893 for PyTorch bf16; the two items where they differ are near-ties.
+
 Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) · evaluation on razvilka [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/benchmarks/razvilka/run_razvilka.ipynb)
 
 ## Question types
