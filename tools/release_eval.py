@@ -3,9 +3,10 @@
 Runs the exported model through this package — torch on CUDA (bf16) and ONNX
 int8 on CPU — on every razvilka item, scores both with `razvilka_eval.py`, and
 records peak GPU memory and GPU latency for a 384-token text with 1 and 3
-questions.
+questions. With `--vllm URL`, also a running vLLM server (started with
+`FRIDA_DECISIONS_STATE_MAX=512`, the state cut used here), 8 requests in flight.
 
-    python tools/release_eval.py [model_dir] [razvilka.jsonl] [--skip-onnx]
+    python tools/release_eval.py [model_dir] [razvilka.jsonl] [--skip-onnx] [--vllm URL]
 """
 from __future__ import annotations
 
@@ -23,7 +24,8 @@ import torch  # noqa: E402
 import razvilka_eval as rz  # noqa: E402
 from frida_decisions import Judge, OnnxJudge  # noqa: E402
 
-args = [a for a in sys.argv[1:] if not a.startswith("--")]
+VLLM = sys.argv[sys.argv.index("--vllm") + 1] if "--vllm" in sys.argv else None
+args = [a for a in sys.argv[1:] if not a.startswith("--") and a != VLLM]
 MODEL = args[0] if args else str(ROOT / "_export" / "FRIDA-Decisions")
 DATA = args[1] if len(args) > 1 else None
 OUT = ROOT / "tests" / "_results" / "release_eval.json"
@@ -36,6 +38,38 @@ def predictions(judge, items):
         (qid, _), = request["questions"].items()
         preds[item["id"]] = judge.judge(request)["answers"][qid]
     return preds
+
+
+def vllm_predictions(url: str, items, state_max: int, workers: int = 8):
+    """Answers from a vLLM server, checking that it cuts the state where `Judge` does."""
+    import concurrent.futures as cf
+
+    import httpx
+
+    from frida_decisions.base import BaseJudge
+
+    text = BaseJudge(Path(MODEL), state_max=state_max)
+    client = httpx.Client(base_url=url, timeout=600)
+    model = client.get("/v1/models").json()["data"][0]["id"]
+
+    def one(item):
+        request = item["request"] if isinstance(item["request"], dict) else json.loads(item["request"])
+        (qid, _), = request["questions"].items()
+        r = client.post("/pooling", json={"model": model, "data": request})
+        r.raise_for_status()
+        data = r.json()["data"]
+        expected = len(text.compile(request)[2].state)
+        if data["usage"]["state_tokens"] != expected:
+            raise RuntimeError(f"{item['id']}: the server kept {data['usage']['state_tokens']} state "
+                               f"tokens, Judge keeps {expected}: start it with "
+                               f"FRIDA_DECISIONS_STATE_MAX={state_max}")
+        return item["id"], data["answers"][qid], data["usage"]["cached_tokens"]
+
+    t0 = time.time()
+    with cf.ThreadPoolExecutor(workers) as pool:
+        out = list(pool.map(one, items))
+    seconds = time.time() - t0
+    return {k: a for k, a, _ in out}, seconds, sum(c for _, _, c in out)
 
 
 def typical(questions: int, i: int) -> dict:
@@ -79,6 +113,19 @@ def main() -> None:
     gpu_decisions = {k: v for k, v in preds.items()}
     del gpu
     torch.cuda.empty_cache()
+
+    if VLLM:
+        vpreds, seconds, cached = vllm_predictions(VLLM, items, 512)
+        vscore = rz.score(vpreds, items)
+        report["vllm"] = {"accuracy": vscore["accuracy"], "correct": vscore["correct"],
+                          "per_type": vscore["per_type"],
+                          "decisions_equal_to_torch": sum(
+                              rz.decide(i, vpreds[i["id"]]) == rz.decide(i, gpu_decisions[i["id"]])
+                              for i in items),
+                          "different": [i["id"] for i in items if rz.decide(i, vpreds[i["id"]]) !=
+                                        rz.decide(i, gpu_decisions[i["id"]])],
+                          "requests_per_second_8_in_flight": round(len(items) / seconds, 1),
+                          "cached_tokens": cached}
 
     if "--skip-onnx" not in sys.argv:
         onnx = OnnxJudge.from_pretrained(MODEL, state_max=512, threads=6)

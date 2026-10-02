@@ -6,18 +6,20 @@
 * **Packed, not repeated.** Questions and options sit next to one copy of the text; a typical request is a single encoder call, and a 243-intent catalog is still one request.
 * **Order-independent by construction.** Options never attend to each other, so adding, removing or reordering options does not change any other option's margin.
 * **Exact state cache.** The text is encoded once and its keys/values are reused across rows and repeated requests — the same margins, less compute.
-* **GPU or CPU.** PyTorch on GPU or CPU, or an int8 ONNX model for CPU that does not need torch.
+* **GPU or CPU.** PyTorch on GPU or CPU, an int8 ONNX model for CPU that does not need torch, or a vLLM server.
 
 ## Install
 
 ```bash
 # PyTorch backend (GPU or CPU)
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.1.0"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
 # int8 ONNX backend for CPU, without torch
-pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.1.0"
+pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
+# vLLM server (GPU, Linux)
+pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
 ```
 
-The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, or both). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
+The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, `[vllm]`). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
 
 ## Quickstart
 
@@ -137,7 +139,7 @@ For the 243-intent example in [`examples/data/intent_catalog.json`](examples/dat
 |---|---|---|---|
 | `Judge` (PyTorch) | `[torch]` | GPU (bf16) or CPU (fp32) | packing + exact state cache |
 | `OnnxJudge` (ONNX Runtime) | `[onnx]` | CPU | int8, packing via graph inputs, no state cache |
-| vLLM plugin | — | GPU | coming |
+| vLLM server | `[vllm]` | GPU (bf16), Linux | packing + state cache through vLLM's prefix cache, continuous batching across users |
 
 The ONNX model is for CPU only. Its weights are int8 (one scale per output channel) and its activations are quantised to int8 on the fly, with one scale per token, while the decision head stays in float32. Quantisation changes the margins: on the 122 decisions of the test set, the ONNX model agrees with PyTorch float32 on 120, and the largest margin difference is 0.65. Where every decision matters, use the PyTorch backend.
 
@@ -147,6 +149,40 @@ from frida_decisions import OnnxJudge
 judge = OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions", threads=8)
 judge(request)          # same request and response format
 ```
+
+### vLLM server
+
+`[vllm]` installs a vLLM plugin: the model, its attention (the packed block mask and FRIDA's relative positions, which vLLM's own attention kernels do not support) and the request front end. vLLM finds it on start; there is nothing to import.
+
+```bash
+vllm serve ai-forever/FRIDA-Decisions \
+  --hf-overrides '{"architectures": ["FridaDecisionsModel"]}' \
+  --io-processor-plugin frida_decisions \
+  --no-enable-chunked-prefill --enforce-eager --max-model-len 2048
+```
+
+In Docker (Linux, or Windows with WSL2):
+
+```bash
+docker run --gpus all --ipc=host -p 8000:8000 --entrypoint bash vllm/vllm-openai:v0.29.0 -c \
+  'pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0" && exec vllm serve ai-forever/FRIDA-Decisions --hf-overrides "{\"architectures\": [\"FridaDecisionsModel\"]}" --io-processor-plugin frida_decisions --no-enable-chunked-prefill --enforce-eager --max-model-len 2048'
+```
+
+A request is the same JSON as for `Judge`, under `data`; the response `data` is what `Judge` returns:
+
+```python
+import httpx
+
+r = httpx.post("http://localhost:8000/pooling", json={"model": "ai-forever/FRIDA-Decisions", "data": request})
+r.json()["data"]["answers"]
+```
+
+* **Required flags.** The attention is bidirectional, so a text split across scheduler steps would be encoded without seeing its own end: the server refuses to start with chunked prefill on. `--kv-cache-dtype` must stay `auto`, because a cached text is reused bit for bit. `--enforce-eager` is expected (the attention is plain PyTorch).
+* **State cache.** Prefix caching is on by default. A text the server has already read is not encoded again, whether the next request comes from the same user or another one; `usage.cached_tokens` shows it. Each row starts with a hash of the whole text, so a cached block is reused only for the same text, never for another text that starts the same way. `--no-enable-prefix-caching` turns the cache off; pass `cache_salt` in the request body to share cached texts only within one tenant.
+* **Limits.** The packing limits come from `decisions_config.json`; the state is cut at 384 tokens, as in `Judge` (`FRIDA_DECISIONS_STATE_MAX` in the server's environment changes it).
+* **Raw token ids.** Clients that tokenize themselves can send rows to `POST /pooling` with `"task": "classify"` and `"input": [[ids], ...]` and get each row's margins; `frida_decisions.vllm_backend.rows.build_rows` builds the rows. A row that breaks the format, or whose text hash is wrong, is refused with HTTP 400 and does not affect other requests.
+* **Version.** Tested with vLLM 0.29.0. The plugin uses vLLM internals (attention backends, poolers) that change between releases; with another version the server logs a warning, and `tools/vllm_parity.py` checks a running server against `Judge`.
+* **One difference from `Judge`.** Special-token strings inside the text (a literal `<s>` or `</s>`) are tokenized as plain text, because the plugin uses those tokens to mark the row layout; `usage.special_tokens_split` lists where that happened.
 
 ### Measured
 
@@ -163,6 +199,10 @@ The checks live in [`tests/`](tests) and [`tools/`](tools) (results are written 
 | CPU latency, one request: 384-token state, 3 questions (8 options), 6 threads, background load | PyTorch fp32 2.28 s, ONNX int8 0.88 s (about 2.5x), `tools/cpu_latency_ab.py` |
 | GPU latency, one request: ~400-token state, RTX 5060 Ti, bf16 | 28.2 ms with 1 question, 34.0 ms with 3 questions (`tools/release_eval.py`) |
 | peak GPU memory over the razvilka run | 1.8 GB |
+| vLLM backend arithmetic (CPU, float32, simulated paged cache) vs PyTorch float32 | same decisions on 9 requests, cold and with the state from the cache, max margin drift 5.2e-06 (`tests/test_vllm_backend.py`) |
+| vLLM server (bf16, GPU) vs PyTorch bf16 (GPU) on razvilka | accuracy 0.890 vs 0.893 (654 vs 656 of 735, `tools/release_eval.py --vllm`): the 2 items where they differ are near-ties in float32 (top-two margin gaps 0.053 and 0.008), and PyTorch bf16 lands on the float32 side. The margin error from float32 is the same size for both over all 3,762 options — median 0.017 / 0.017, p95 0.066 / 0.067, p99 0.108 / 0.102 (vLLM / PyTorch) — and the same with the text read from the cache |
+| vLLM server throughput on razvilka, 8 requests in flight | 60.8 requests/s |
+| vLLM server latency, one client over HTTP: ~400-token state, RTX 5060 Ti, bf16 | 40 ms with 1 question, 44 ms with 3; 34 / 30 ms when the text is already cached |
 | accuracy on razvilka (735 items) | 0.893 (PyTorch bf16, GPU), see the model card |
 
 GPU parity with the CPU path was smoke-tested on 15 decisions (`tools/gpu_parity.py`, all equal); the razvilka run above is the larger check.
@@ -198,7 +238,12 @@ python tools/export_onnx.py --model-dir _export/FRIDA-Decisions
 pytest -s
 ```
 
-Model tests are skipped when no exported folder is present (`FD_MODEL_DIR`).
+Model tests are skipped when no exported folder is present (`FD_MODEL_DIR`). The vLLM backend's own tests run on CPU without vLLM; a running server is checked against `Judge` with
+
+```bash
+python tools/vllm_parity.py --reference-only          # float32 reference on CPU, before starting the server
+python tools/vllm_parity.py --url http://127.0.0.1:8000
+```
 
 ## License
 

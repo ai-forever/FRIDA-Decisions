@@ -21,15 +21,25 @@ dependencies = [
 [project.optional-dependencies]
 torch = ["torch>=2.1", "transformers>=4.40"]
 onnx = ["onnxruntime>=1.17"]
-export = ["torch>=2.1", "transformers>=4.40", "onnx>=1.15", "onnxruntime>=1.17"]
+# Tested with vLLM 0.29.0 only: the backend uses vLLM's attention-backend and
+# pooler internals, which change between releases.
+vllm = ["vllm>=0.29.0"]
+export =["torch>=2.1", "transformers>=4.40", "onnx>=1.15", "onnxruntime>=1.17"]
 dev = ["pytest>=7", "torch>=2.1", "transformers>=4.40", "onnx>=1.15", "onnxruntime>=1.17"]
 
 [project.urls]
 Repository = "https://github.com/ai-forever/FRIDA-Decisions"
 Model = "https://huggingface.co/ai-forever/FRIDA-Decisions"
 
+# vLLM loads these when it starts; without vLLM installed they are never imported.
+[project.entry-points."vllm.general_plugins"]
+frida_decisions = "frida_decisions.vllm_backend:register"
+
+[project.entry-points."vllm.io_processor_plugins"]
+frida_decisions = "frida_decisions.vllm_backend:io_processor"
+
 [tool.setuptools]
-packages = ["frida_decisions"]
+packages = ["frida_decisions", "frida_decisions.vllm_backend"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
