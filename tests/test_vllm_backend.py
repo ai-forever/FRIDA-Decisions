@@ -225,6 +225,10 @@ def test_broken_rows_are_refused(text_judge):
 # ----------------------------------------------------------------- small random model
 @pytest.fixture(scope="module")
 def tiny(model_dir):
+    return make_tiny(model_dir)
+
+
+def make_tiny(model_dir):
     """`Judge` around a small random T5 with FRIDA's tokenizer, and the backend's
     encoder over the same weights."""
     from transformers import T5Config, T5EncoderModel

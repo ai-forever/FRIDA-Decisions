@@ -5,12 +5,12 @@ from .config import DecisionsConfig
 from .constants import DEFAULT_REPO_ID, PRODUCT_NAME, QuestionType
 from .protocol import Calibration, RequestError, aggregate, compile_request, decision, parse_request
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "PRODUCT_NAME", "DEFAULT_REPO_ID", "QuestionType", "DecisionsConfig",
     "Calibration", "RequestError", "parse_request", "compile_request", "aggregate", "decision",
-    "Judge", "OnnxJudge",
+    "Judge", "OnnxJudge", "AsyncJudge", "VllmJudge",
 ]
 
 
@@ -29,4 +29,14 @@ def __getattr__(name):
             raise ImportError("OnnxJudge needs onnxruntime: pip install 'frida-decisions[onnx]'") from error
         from .onnx_backend import OnnxJudge
         return OnnxJudge
+    if name == "AsyncJudge":
+        from .async_judge import AsyncJudge
+        return AsyncJudge
+    if name == "VllmJudge":
+        try:
+            import vllm  # noqa: F401
+        except ImportError as error:
+            raise ImportError("VllmJudge needs vLLM (Linux, CUDA GPU): pip install 'frida-decisions[vllm]'") from error
+        from .vllm_backend.engine import VllmJudge
+        return VllmJudge
     raise AttributeError(name)

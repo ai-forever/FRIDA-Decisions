@@ -52,7 +52,8 @@ def reference(cases, model_dir) -> dict:
     out = {}
     for case in cases:
         response = judge.judge(case["request"])
-        out[case["name"]] = {"request": case["request"], "margins": response["margins"]}
+        out[case["name"]] = {"request": case["request"], "margins": response["margins"],
+                             "answers": response["answers"]}
     del judge
     RESULTS.mkdir(parents=True, exist_ok=True)
     REFERENCE.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -68,7 +69,7 @@ def main() -> None:
     cases, model_dir = load_cases()
     ref = json.loads(REFERENCE.read_text(encoding="utf-8")) if REFERENCE.exists() else None
     if ref is None or {c["name"] for c in cases} - set(ref) or any(
-            ref[c["name"]]["request"] != c["request"] for c in cases):
+            ref[c["name"]]["request"] != c["request"] or "answers" not in ref[c["name"]] for c in cases):
         ref = reference(cases, model_dir)
     if args.reference_only:
         print(f"wrote {REFERENCE}")

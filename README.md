@@ -14,11 +14,11 @@ Developed by УЭСМО, SberAI.
 
 ```bash
 # PyTorch backend (GPU or CPU)
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
 # int8 ONNX backend for CPU, without torch
-pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
+pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
 # vLLM server (GPU, Linux)
-pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
+pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
 ```
 
 The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, `[vllm]`). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
@@ -148,6 +148,8 @@ For the 243-intent example in [`examples/data/intent_catalog.json`](examples/dat
 | `Judge` (PyTorch) | `[torch]` | GPU (bf16) or CPU (fp32) | packing + exact state cache |
 | `OnnxJudge` (ONNX Runtime) | `[onnx]` | CPU | int8, packing via graph inputs, no state cache |
 | vLLM server | `[vllm]` | GPU (bf16), Linux | packing + state cache through vLLM's prefix cache, continuous batching across users |
+| `AsyncJudge` | `[torch]` or `[onnx]` | wherever `Judge` / `OnnxJudge` runs | `await judge.judge(request)`; requests awaited together share `judge_batch` calls |
+| `VllmJudge` | `[vllm]` | GPU (bf16), Linux | `await judge.judge(request)` on the vLLM engine in your process: the server's batching and state cache, no HTTP |
 
 The ONNX model is for CPU only. Its weights are int8 (one scale per output channel) and its activations are quantised to int8 on the fly, with one scale per token, while the decision head stays in float32. Quantisation changes the margins: on the 122 decisions of the test set, the ONNX model agrees with PyTorch float32 on 120, and the largest margin difference is 0.65. Where every decision matters, use the PyTorch backend.
 
@@ -173,7 +175,7 @@ In Docker (Linux, or Windows with WSL2); the vLLM image has no `git`, so the pac
 
 ```bash
 docker run --gpus all --ipc=host -p 8000:8000 --entrypoint bash vllm/vllm-openai:v0.29.0 -c \
-  'pip install "frida-decisions[vllm] @ https://github.com/ai-forever/FRIDA-Decisions/archive/refs/tags/v0.2.0.tar.gz" && exec vllm serve ai-forever/FRIDA-Decisions --hf-overrides "{\"architectures\": [\"FridaDecisionsModel\"]}" --io-processor-plugin frida_decisions --no-enable-chunked-prefill --enforce-eager --max-model-len 2048'
+  'pip install "frida-decisions[vllm] @ https://github.com/ai-forever/FRIDA-Decisions/archive/refs/tags/v0.3.0.tar.gz" && exec vllm serve ai-forever/FRIDA-Decisions --hf-overrides "{\"architectures\": [\"FridaDecisionsModel\"]}" --io-processor-plugin frida_decisions --no-enable-chunked-prefill --enforce-eager --max-model-len 2048'
 ```
 
 A request is the same JSON as for `Judge`, under `data`; the response `data` is what `Judge` returns:
@@ -195,6 +197,30 @@ A fuller client — a follow-up question answered from the cache, the 243-intent
 * **Version.** Tested with vLLM 0.29.0. The plugin uses vLLM internals (attention backends, poolers) that change between releases; with another version the server logs a warning, and `tools/vllm_parity.py` checks a running server against `Judge`.
 * **One difference from `Judge`.** Special-token strings inside the text (a literal `<s>` or `</s>`) are tokenized as plain text, because the plugin uses those tokens to mark the row layout; `usage.special_tokens_split` lists where that happened.
 
+### Async API
+
+`AsyncJudge` and `VllmJudge` give `async def judge(request) -> response` with the request and response of `Judge`:
+
+```python
+import asyncio
+from frida_decisions import AsyncJudge, VllmJudge
+
+async def main(requests):
+    # PyTorch (or backend="onnx"): any OS, GPU or CPU
+    async with AsyncJudge.from_pretrained("ai-forever/FRIDA-Decisions") as judge:
+        response = await judge.judge(requests[0])
+
+    # the vLLM engine inside this process (Linux, CUDA GPU), no server
+    async with VllmJudge.from_pretrained("ai-forever/FRIDA-Decisions", gpu_memory_utilization=0.45) as judge:
+        responses = await asyncio.gather(*(judge.judge(r) for r in requests))
+```
+
+More in [`examples/async_judge.py`](examples/async_judge.py).
+
+* **`AsyncJudge`** runs the model in one worker thread, so the event loop stays free while it computes. Requests awaited at the same time are scored together: while one batch runs, the next queues up and goes to `judge_batch` in one call (up to `max_batch`, 8 by default). It wraps any judge: `AsyncJudge(Judge.from_pretrained(...))`.
+* **`VllmJudge`** starts the vLLM engine (in a process vLLM manages) with the flags the model needs and submits each request's rows to it. Requests from all coroutines are batched by vLLM's scheduler, and a text the engine has already read comes from its prefix cache; pass `cache_salt=` to `judge()` to share cached texts only within one tenant. Cancelling an awaiting `judge()` aborts its rows in the engine. Stop it with `close()` or `async with`.
+* **Which one** depends on the load (RTX 5060 Ti, in a vLLM 0.29 container, both judges with default settings, `VllmJudge` with 45 % of the GPU; medians of alternating runs, `tools/async_bench.py`): on a burst of 256 short tickets of one length (≈190 tokens) `AsyncJudge` over PyTorch answers ≈187 requests/s against ≈126 for `VllmJudge`; on razvilka's mix of lengths with 32 requests in flight, ≈58 against ≈69. Likely, but not profiled: packed batches suit equal lengths and pad mixed ones, while vLLM schedules rows of any length. `VllmJudge` also keeps the texts it has read in vLLM's prefix cache. Both raise `RequestError` for an invalid request, as `Judge` does.
+
 ### Measured
 
 The checks live in [`tests/`](tests) and [`tools/`](tools) (results are written locally to `tests/_results/`, which is not committed); CPU and float32 unless noted. The 36-request set is the 9 requests in `tests/` plus 27 longer demo requests (routing, tool choice, moderation, support triage, a 243-intent catalog, 100-passage ranking); of those, only the intent catalog ships in `examples/data/`.
@@ -214,6 +240,7 @@ The checks live in [`tests/`](tests) and [`tools/`](tools) (results are written 
 | vLLM server (bf16, GPU) vs PyTorch bf16 (GPU) on razvilka | accuracy 0.890 vs 0.893 (654 vs 656 of 735, `tools/release_eval.py --vllm`): the 2 items where they differ are near-ties in float32 (top-two margin gaps 0.053 and 0.008), and PyTorch bf16 lands on the float32 side. The margin error from float32 is the same size for both over all 3,762 options — median 0.017 / 0.017, p95 0.066 / 0.067, p99 0.108 / 0.102 (vLLM / PyTorch) — and the same with the text read from the cache |
 | vLLM server throughput, requests in flight | razvilka (735 requests, ≈260 tokens each), 8 in flight: 60.8 requests/s; short tickets (640 requests, ≈190 tokens, `examples/vllm_client.py --burst 640`): 81 with 8 in flight, 90 with 16 |
 | vLLM server latency, one client over HTTP: ≈400-token state, RTX 5060 Ti, bf16 | 40 ms with 1 question, 44 ms with 3; 34 / 30 ms when the text is already cached |
+| async API, RTX 5060 Ti, bf16, in a vLLM 0.29 container, default settings, `VllmJudge` with 45 % of the GPU, every run with a cold cache (`tools/async_bench.py`) | 256 short tickets (≈190 tokens) awaited at once: `AsyncJudge` over PyTorch 187 requests/s (186–189 over 5 runs), `VllmJudge` 126 (125–127); razvilka, 735 items, 32 in flight: 58 (58–58 over 3 runs) and 69 (69–69). Both make the same decisions as PyTorch float32 on the test requests (15/15, `tools/async_check.py`) |
 | accuracy on razvilka (735 items) | 0.893 (PyTorch bf16, GPU), see the model card |
 
 GPU parity with the CPU path was smoke-tested on 15 decisions (`tools/gpu_parity.py`, all equal); the razvilka run above is the larger check.

@@ -35,7 +35,7 @@ It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 e
 ## Quickstart
 
 ```bash
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
 ```
 
 ```python
@@ -80,11 +80,14 @@ Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets
 For many users at once (Linux, GPU). The server batches requests together and keeps the texts it has read in vLLM's prefix cache, so a follow-up question about a text costs only its own tokens.
 
 ```bash
-pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.2.0"
-vllm serve ai-forever/FRIDA-Decisions   --hf-overrides '{"architectures": ["FridaDecisionsModel"]}'   --io-processor-plugin frida_decisions   --no-enable-chunked-prefill --enforce-eager --max-model-len 2048
+pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
+vllm serve ai-forever/FRIDA-Decisions \
+  --hf-overrides '{"architectures": ["FridaDecisionsModel"]}' \
+  --io-processor-plugin frida_decisions \
+  --no-enable-chunked-prefill --enforce-eager --max-model-len 2048
 ```
 
-`POST /pooling` with the request under `data` returns the same response as `Judge` ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.2.0/examples/vllm_client.py)).
+`POST /pooling` with the request under `data` returns the same response as `Judge` ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.3.0/examples/vllm_client.py)).
 
 | one RTX 5060 Ti, bf16, vLLM 0.29 | |
 |---|--:|
@@ -96,6 +99,8 @@ vllm serve ai-forever/FRIDA-Decisions   --hf-overrides '{"architectures": ["Frid
 | razvilka, 735 items (`FRIDA_DECISIONS_STATE_MAX=512`, as in the PyTorch run) | 0.890 (PyTorch bf16: 0.893) |
 
 Measured with the command above plus `--gpu-memory-utilization 0.45` (the card also drives a display), client on the same machine, after warm-up; the first request after a start takes about 0.3 s. vLLM and PyTorch differ on 2 razvilka items, both near-ties in fp32.
+
+**Async API, no server.** `await judge.judge(request)` inside your own program: `AsyncJudge` wraps the PyTorch (or ONNX) judge on any OS, `VllmJudge` runs the vLLM engine in your process (Linux, GPU) with the same batching and cache as the server ([example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.3.0/examples/async_judge.py)). Which is faster depends on the load: on the same card, a burst of 256 short tickets runs at ≈187 requests/s with `AsyncJudge` over PyTorch and ≈126 with `VllmJudge`; razvilka's mix of lengths with 32 requests in flight, at ≈58 and ≈69 (`VllmJudge` with 45 % of the GPU, medians of alternating runs).
 
 ## Question types
 
@@ -110,7 +115,7 @@ Texts up to 512 tokens are the recommended range.
 
 ## Benchmarks
 
-**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.2.0/benchmarks/razvilka)).
+**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.3.0/benchmarks/razvilka)).
 
 | model | parameters | accuracy |
 |---|--:|--:|
