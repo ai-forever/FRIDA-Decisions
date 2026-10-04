@@ -111,7 +111,24 @@ Measured with the command above plus `--gpu-memory-utilization 0.45` (the card a
 | `noul` | is a statement true | `p(true)` |
 | `ranking` | order candidates for a query | the order and a margin per candidate |
 
-Texts up to 512 tokens are the recommended range.
+### Input length
+
+* **The 512-token range is for the text (`state`) only.** Questions and options do not count against it: each question's instructions take up to 96 tokens and each option up to 256. Options are packed into rows of up to 16 options / 1,024 tokens next to the text, and a request with more options simply gets more rows, so the number of options is limited only by time and memory.
+* **Default cut: 384 tokens.** `Judge.from_pretrained(..., state_max=512)` uses the whole trained range (the razvilka numbers above use 512). A longer text is cut from the end, and the response says so in `usage.state_truncated`. On the vLLM server the cut is set with `FRIDA_DECISIONS_STATE_MAX`.
+* **Longer texts.** T5's relative positions accept a longer `state_max`, but the model was trained on texts up to 512 tokens, and on longer ones accuracy drops sharply, especially for questions about details deep in the text. For long documents, split them into fragments of up to 512 tokens (by paragraph or section) and ask the questions per fragment: the fragments go in one `judge_batch` call, and a yes/no question like "is there X anywhere" becomes the maximum over fragments.
+* **Cost grows with text + options, not text × options**: the text is encoded once per request, and with the state cache a follow-up question about the same text costs only its own tokens.
+
+**Raising the limits.** The caps are settings, not part of the weights:
+
+```python
+judge = Judge.from_pretrained("ai-forever/FRIDA-Decisions", state_max=1024)  # text cut; the same for OnnxJudge
+judge.config.option_max_tokens = 512        # one option (default 256)
+judge.config.instruction_max_tokens = 192   # one question's instructions (default 96)
+judge.config.max_row_tokens = 2048          # one packed row (default 1024)
+judge.config.max_options_per_row = 32       # options per row (default 16)
+```
+
+The defaults ship with the weights in `decisions_config.json`; edit it in a local copy of the model folder to change them for every backend. For the vLLM server, point `vllm serve` at that folder, set `FRIDA_DECISIONS_STATE_MAX` for the text cut, and keep `--max-model-len` above the longest row (the server says so when a row does not fit). Larger values cost time and memory, and the model was trained within the defaults, so check quality on your own data before relying on them.
 
 ## Benchmarks
 
