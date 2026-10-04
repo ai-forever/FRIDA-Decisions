@@ -113,6 +113,18 @@ Measured with the command above plus `--gpu-memory-utilization 0.45` (the card a
 * **Longer texts.** T5's relative positions accept a longer `state_max`, but the model was trained on texts up to 512 tokens, and on longer ones accuracy drops sharply, especially for questions about details deep in the text. For long documents, split them into fragments of up to 512 tokens (by paragraph or section) and ask the questions per fragment: the fragments go in one `judge_batch` call, and a yes/no question like "is there X anywhere" becomes the maximum over fragments.
 * **Cost grows with text + options, not text × options**: the text is encoded once per request, and with the state cache a follow-up question about the same text costs only its own tokens.
 
+**Raising the limits.** The caps are settings, not part of the weights:
+
+```python
+judge = Judge.from_pretrained("ai-forever/FRIDA-Decisions", state_max=1024)  # text cut; the same for OnnxJudge
+judge.config.option_max_tokens = 512        # one option (default 256)
+judge.config.instruction_max_tokens = 192   # one question's instructions (default 96)
+judge.config.max_row_tokens = 2048          # one packed row (default 1024)
+judge.config.max_options_per_row = 32       # options per row (default 16)
+```
+
+The defaults ship with the weights in `decisions_config.json`; edit it in a local copy of the model folder to change them for every backend. For the vLLM server, point `vllm serve` at that folder, set `FRIDA_DECISIONS_STATE_MAX` for the text cut, and keep `--max-model-len` above the longest row (the server says so when a row does not fit). Larger values cost time and memory, and the model was trained within the defaults, so check quality on your own data before relying on them.
+
 ## Benchmarks
 
 **razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.2.0/benchmarks/razvilka)).
