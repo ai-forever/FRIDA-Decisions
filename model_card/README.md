@@ -106,7 +106,12 @@ Measured with the command above plus `--gpu-memory-utilization 0.45` (the card a
 | `noul` | is a statement true | `p(true)` |
 | `ranking` | order candidates for a query | the order and a margin per candidate |
 
-Texts up to 512 tokens are the recommended range.
+### Input length
+
+* **The 512-token range is for the text (`state`) only.** Questions and options do not count against it: each question's instructions take up to 96 tokens and each option up to 256. Options are packed into rows of up to 16 options / 1,024 tokens next to the text, and a request with more options simply gets more rows, so the number of options is limited only by time and memory.
+* **Default cut: 384 tokens.** `Judge.from_pretrained(..., state_max=512)` uses the whole trained range (the razvilka numbers above use 512). A longer text is cut from the end, and the response says so in `usage.state_truncated`. On the vLLM server the cut is set with `FRIDA_DECISIONS_STATE_MAX`.
+* **Longer texts.** T5's relative positions accept a longer `state_max`, but the model was trained on texts up to 512 tokens, and on longer ones accuracy drops sharply, especially for questions about details deep in the text. For long documents, split them into fragments of up to 512 tokens (by paragraph or section) and ask the questions per fragment: the fragments go in one `judge_batch` call, and a yes/no question like "is there X anywhere" becomes the maximum over fragments.
+* **Cost grows with text + options, not text × options**: the text is encoded once per request, and with the state cache a follow-up question about the same text costs only its own tokens.
 
 ## Benchmarks
 
