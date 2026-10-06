@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "frida-decisions"
-version = "0.3.0"
+version = "0.4.0"
 description = "Structured decisions over text (choice, score, yes/no, ranking) with one packed encoder pass."
 readme = "README.md"
 license = "MIT"

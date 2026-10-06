@@ -28,14 +28,14 @@ It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 e
 
 * **razvilka.** 0.893 on [razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka) (735 items); TypeSafe Jev, a commercial API, scores 0.897 on the same items (paired McNemar p = 0.84). The highest among the open models we ran on razvilka.
 * **Fast.** 28–34 ms per request on an RTX 5060 Ti (a ≈400-token text, 1–3 questions), in process; conditions in the latency table below.
-* **Light.** 1.8 GiB allocated by PyTorch at peak over the whole razvilka run, plus the CUDA context; an int8 ONNX build runs on CPU.
+* **Light.** 1.8 GiB allocated by PyTorch at peak over the whole razvilka run, plus the CUDA context; an int8 ONNX build runs on CPU, and an MLX build on Apple Silicon.
 * **Packing.** All options of all questions share one sequence and the text is encoded once; with the state cache a follow-up question about the same text costs only its own tokens. A catalog of 243 intents is answered in 0.44 s, against 4.65 s for one sequence per option.
 * **Serving.** A [vLLM server](#vllm-server) batches requests from many users and keeps the texts it has read in its prefix cache: about 60 requests/s on one RTX 5060 Ti with 8 requests in flight.
 
 ## Quickstart
 
 ```bash
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
 ```
 
 ```python
@@ -80,14 +80,14 @@ Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets
 For many users at once (Linux, GPU). The server batches requests together and keeps the texts it has read in vLLM's prefix cache, so a follow-up question about a text costs only its own tokens.
 
 ```bash
-pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
+pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
 vllm serve ai-forever/FRIDA-Decisions \
   --hf-overrides '{"architectures": ["FridaDecisionsModel"]}' \
   --io-processor-plugin frida_decisions \
   --no-enable-chunked-prefill --enforce-eager --max-model-len 2048
 ```
 
-`POST /pooling` with the request under `data` returns the same response as `Judge` ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.3.0/examples/vllm_client.py)).
+`POST /pooling` with the request under `data` returns the same response as `Judge` ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.4.0/examples/vllm_client.py)).
 
 | one RTX 5060 Ti, bf16, vLLM 0.29 | |
 |---|--:|
@@ -100,7 +100,9 @@ vllm serve ai-forever/FRIDA-Decisions \
 
 Measured with the command above plus `--gpu-memory-utilization 0.45` (the card also drives a display), client on the same machine, after warm-up; the first request after a start takes about 0.3 s. vLLM and PyTorch differ on 2 razvilka items, both near-ties in fp32.
 
-**Async API, no server.** `await judge.judge(request)` inside your own program: `AsyncJudge` wraps the PyTorch (or ONNX) judge on any OS, `VllmJudge` runs the vLLM engine in your process (Linux, GPU) with the same batching and cache as the server ([example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.3.0/examples/async_judge.py)). Which is faster depends on the load: on the same card, a burst of 256 short tickets runs at ≈187 requests/s with `AsyncJudge` over PyTorch and ≈126 with `VllmJudge`; razvilka's mix of lengths with 32 requests in flight, at ≈58 and ≈69 (`VllmJudge` with 45 % of the GPU, medians of alternating runs).
+**Async API, no server.** `await judge.judge(request)` inside your own program: `AsyncJudge` wraps the PyTorch (or ONNX, or MLX) judge on any OS, `VllmJudge` runs the vLLM engine in your process (Linux, GPU) with the same batching and cache as the server ([example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.4.0/examples/async_judge.py)). Which is faster depends on the load: on the same card, a burst of 256 short tickets runs at ≈187 requests/s with `AsyncJudge` over PyTorch and ≈126 with `VllmJudge`; razvilka's mix of lengths with 32 requests in flight, at ≈58 and ≈69 (`VllmJudge` with 45 % of the GPU, medians of alternating runs).
+
+**Apple Silicon.** `MlxJudge` (`frida-decisions[mlx]`, contributed by [@akolotov](https://github.com/akolotov)) runs the model in MLX, without torch. On an Apple M4 Pro, in float32 it makes the same 735 razvilka decisions as PyTorch float32 on CPU; in bfloat16, 733 of them, with the margin error of bfloat16 in PyTorch ([example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.4.0/examples/mlx_quickstart.py)). PyTorch itself also runs on a Mac with `device="mps"`.
 
 ## Question types
 
@@ -132,7 +134,7 @@ The defaults ship with the weights in `decisions_config.json`; edit it in a loca
 
 ## Benchmarks
 
-**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.3.0/benchmarks/razvilka)).
+**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.4.0/benchmarks/razvilka)).
 
 | model | parameters | accuracy |
 |---|--:|--:|
@@ -157,10 +159,12 @@ The defaults ship with the weights in `decisions_config.json`; edit it in a loca
 |---|---|--:|
 | RTX 5060 Ti, bf16 | ≈400-token state, 1 question (3 options) | 28.2 ms |
 | RTX 5060 Ti, bf16 | ≈400-token state, 3 questions (8 options) | 34.0 ms |
+| Apple M4 Pro, MLX bf16 | ≈400-token state, 1 question (3 options) | 113 ms |
+| Apple M4 Pro, MLX bf16 | ≈400-token state, 3 questions (8 options) | 139 ms |
 | CPU, 6 threads, PyTorch fp32 | 384-token state, 3 questions (8 options) | 2.28 s |
 | CPU, 6 threads, ONNX int8 | 384-token state, 3 questions (8 options) | 0.88 s |
 
-GPU rows: median of 30 requests after warm-up, timing parsing, tokenisation, packing and the forward pass. CPU rows were measured on a machine with background load; the ratio between them (about 2.5x) is the stable part.
+GPU and Apple rows: median of 30 requests after warm-up, timing parsing, tokenisation, packing and the forward pass (Apple: `tools/mlx_check.py`, one run; MLX float32 takes 126 and 156 ms, PyTorch on MPS in bf16 139 and 168 ms). CPU rows were measured on a machine with background load; the ratio between them (about 2.5x) is the stable part.
 
 **Packing**, RTX 5060 Ti, bf16, same model, one sequence per option vs packed with the state cache:
 

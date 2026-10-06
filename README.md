@@ -14,13 +14,13 @@ Developed by УЭСМО, SberAI.
 
 ```bash
 # PyTorch backend (GPU or CPU)
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
 # int8 ONNX backend for CPU, without torch
-pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
+pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
 # MLX backend for Apple Silicon, without torch
-pip install "frida-decisions[mlx] @ git+https://github.com/ai-forever/FRIDA-Decisions@main"
+pip install "frida-decisions[mlx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
 # vLLM server (GPU, Linux)
-pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
+pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
 ```
 
 The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, `[mlx]`, `[vllm]`). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
@@ -198,7 +198,7 @@ In Docker (Linux, or Windows with WSL2); the vLLM image has no `git`, so the pac
 
 ```bash
 docker run --gpus all --ipc=host -p 8000:8000 --entrypoint bash vllm/vllm-openai:v0.29.0 -c \
-  'pip install "frida-decisions[vllm] @ https://github.com/ai-forever/FRIDA-Decisions/archive/refs/tags/v0.3.0.tar.gz" && exec vllm serve ai-forever/FRIDA-Decisions --hf-overrides "{\"architectures\": [\"FridaDecisionsModel\"]}" --io-processor-plugin frida_decisions --no-enable-chunked-prefill --enforce-eager --max-model-len 2048'
+  'pip install "frida-decisions[vllm] @ https://github.com/ai-forever/FRIDA-Decisions/archive/refs/tags/v0.4.0.tar.gz" && exec vllm serve ai-forever/FRIDA-Decisions --hf-overrides "{\"architectures\": [\"FridaDecisionsModel\"]}" --io-processor-plugin frida_decisions --no-enable-chunked-prefill --enforce-eager --max-model-len 2048'
 ```
 
 A request is the same JSON as for `Judge`, under `data`; the response `data` is what `Judge` returns:
