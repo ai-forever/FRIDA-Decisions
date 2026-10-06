@@ -29,17 +29,17 @@ except ImportError as error:
 else:
     raise AssertionError('Missing MLX must raise an installation error')
 '''
-    subprocess.run([sys.executable, '-c', code], cwd=ROOT, check=True)
+    subprocess.run([sys.executable, "-c", code], cwd=ROOT, check=True)
 
 
 def test_clean_mlx_only_real_inference(model_dir):
-    python = os.environ.get('FD_MLX_ONLY_PYTHON')
+    python = os.environ.get("FD_MLX_ONLY_PYTHON")
     if not python:
-        pytest.skip('Set FD_MLX_ONLY_PYTHON to the clean MLX-only interpreter')
-    result = subprocess.run([python, 'examples/mlx_quickstart.py', '--model', str(model_dir),
-                             '--assert-no-torch'], cwd=ROOT, check=True,
+        pytest.skip("Set FD_MLX_ONLY_PYTHON to the clean MLX-only interpreter")
+    result = subprocess.run([python, "examples/mlx_quickstart.py", "--model", str(model_dir),
+                             "--assert-no-torch"], cwd=ROOT, check=True,
                             capture_output=True, text=True, timeout=120)
     import json
     response = json.loads(result.stdout)
-    assert response['usage']['backend'] == 'mlx'
-    assert response['answers']['intent']['choice'] == 'port'
+    assert response["usage"]["backend"] == "mlx"
+    assert response["answers"]["intent"]["choice"] == "port"

@@ -13,13 +13,13 @@ from .mlx_modeling import FridaMlxDecisionModel, StateCache
 from .packing import (TokenizedRequest, build_rows, count_packed_rows, pack_queries,
                       pack_rows, state_buckets)
 
-_MLX_FILES = ['*.json', 'model.safetensors', 'head.safetensors']
+_MLX_FILES = ["*.json", "model.safetensors", "head.safetensors"]
 
 
 class MlxJudge(BaseJudge):
     """The shared decision API with a native MLX encoder and FP32 head."""
 
-    backend = 'mlx'
+    backend = "mlx"
 
     def __init__(self, folder: Path, encoder: FridaMlxDecisionModel,
                  state_max: int | None = None, rows_per_forward: int | None = 1,
@@ -27,9 +27,9 @@ class MlxJudge(BaseJudge):
         super().__init__(folder, state_max)
         if rows_per_forward is not None and (not isinstance(rows_per_forward, int)
                                              or rows_per_forward < 1):
-            raise ValueError('rows_per_forward must be a positive integer or None')
+            raise ValueError("rows_per_forward must be a positive integer or None")
         if state_cache_mb < 0:
-            raise ValueError('state_cache_mb must be nonnegative')
+            raise ValueError("state_cache_mb must be nonnegative")
         self.state_cache = StateCache(state_cache_mb * 2**20) if state_cache_mb else None
         self.model = encoder
         self.dtype = encoder.embed.weight.dtype
@@ -44,7 +44,7 @@ class MlxJudge(BaseJudge):
                         dtype=mx.float32, state_max: int = 384,
                         rows_per_forward: int | None = 1,
                         revision: str | None = None,
-                        state_cache_mb: int = 512, compile_encoder: bool = True) -> 'MlxJudge':
+                        state_cache_mb: int = 512, compile_encoder: bool = True) -> "MlxJudge":
         """Load original released weights. FP32 is the default encoder precision.
 
         dtype accepts mx.float32 or mx.bfloat16. The head stays in FP32.
@@ -72,7 +72,7 @@ class MlxJudge(BaseJudge):
     def _score_packed(self, requests: list[TokenizedRequest]):
         rows, per_request = build_rows(requests, self.config)
         if not rows:
-            return [[] for _ in requests], {'rows': 0, 'encoder_tokens': 0, 'state_cache': 'off'}
+            return [[] for _ in requests], {"rows": 0, "encoder_tokens": 0, "state_cache": "off"}
         step = self.rows_per_forward or len(rows)
         margins, tokens = [], 0
         for i in range(0, len(rows), step):
@@ -83,7 +83,7 @@ class MlxJudge(BaseJudge):
         for n in per_request:
             out.append(margins[start:start + n])
             start += n
-        return out, {'rows': len(rows), 'encoder_tokens': tokens, 'state_cache': 'off'}
+        return out, {"rows": len(rows), "encoder_tokens": tokens, "state_cache": "off"}
 
     def _forward_packed(self, batch) -> list[float]:
         hidden = self._forward_encoder(mx.array(batch.input_ids, dtype=mx.int32),
@@ -101,7 +101,7 @@ class MlxJudge(BaseJudge):
 
     def _score_cached(self, req: TokenizedRequest):
         if self.state_cache is None:
-            raise ValueError('State cache is disabled')
+            raise ValueError("State cache is disabled")
         key = tuple(req.state)
         hit = self.state_cache.get(key)
         state_cost = 0
@@ -134,9 +134,9 @@ class MlxJudge(BaseJudge):
                 mx.array(slots - offset, dtype=mx.int32), count)
             mx.eval(values)
             margins += values.tolist()
-        return margins, {'rows': len(q.rows),
-                         'encoder_tokens': state_cost + sum(len(row.ids) for row in q.rows),
-                         'state_cache': 'miss' if hit is None else 'hit'}
+        return margins, {"rows": len(q.rows),
+                         "encoder_tokens": state_cost + sum(len(row.ids) for row in q.rows),
+                         "state_cache": "miss" if hit is None else "hit"}
 
     def margins_cached(self, request: dict) -> list[float]:
         """Return margins in candidate order through the cached encoder."""

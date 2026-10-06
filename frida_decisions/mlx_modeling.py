@@ -88,12 +88,12 @@ class FridaMlxEncoderLayer(nn.Module):
 class FridaMlxDecisionModel(nn.Module):
     def __init__(self, cfg):
         super().__init__()
-        if cfg.model_type != 't5' or cfg.feed_forward_proj != 'gated-gelu':
-            raise ValueError('MLX requires a T5 encoder with gated-gelu')
-        if getattr(cfg, 'dense_act_fn', 'gelu_new') != 'gelu_new':
-            raise ValueError('MLX requires gelu_new')
-        if getattr(cfg, 'is_decoder', False):
-            raise ValueError('MLX requires an encoder configuration')
+        if cfg.model_type != "t5" or cfg.feed_forward_proj != "gated-gelu":
+            raise ValueError("MLX requires a T5 encoder with gated-gelu")
+        if getattr(cfg, "dense_act_fn", "gelu_new") != "gelu_new":
+            raise ValueError("MLX requires gelu_new")
+        if getattr(cfg, "is_decoder", False):
+            raise ValueError("MLX requires an encoder configuration")
         self.embed = nn.Embedding(cfg.vocab_size, cfg.d_model)
         self.layers = [FridaMlxEncoderLayer(cfg) for _ in range(cfg.num_layers)]
         self.final_norm = T5Norm(cfg.d_model, cfg.layer_norm_epsilon)
@@ -165,56 +165,56 @@ class FridaMlxDecisionModel(nn.Module):
         return self.head(self.pool(hidden, row, col, slot, count)).squeeze(-1)
 
     def weight_mapping(self):
-        mapping = {'shared.weight': 'embed.weight',
-                   'encoder.final_layer_norm.weight': 'final_norm.weight',
-                   'encoder.block.0.layer.0.SelfAttention.relative_attention_bias.weight':
-                       'bias_table.weight'}
+        mapping = {"shared.weight": "embed.weight",
+                   "encoder.final_layer_norm.weight": "final_norm.weight",
+                   "encoder.block.0.layer.0.SelfAttention.relative_attention_bias.weight":
+                       "bias_table.weight"}
         for i in range(len(self.layers)):
-            source, target = f'encoder.block.{i}', f'layers.{i}'
-            for projection in ('q', 'k', 'v', 'o'):
-                mapping[f'{source}.layer.0.SelfAttention.{projection}.weight'] = (
-                    f'{target}.attention.{projection}.weight')
-            for projection in ('wi_0', 'wi_1', 'wo'):
-                mapping[f'{source}.layer.1.DenseReluDense.{projection}.weight'] = (
-                    f'{target}.dense.{projection}.weight')
-            mapping[f'{source}.layer.0.layer_norm.weight'] = f'{target}.ln1.weight'
-            mapping[f'{source}.layer.1.layer_norm.weight'] = f'{target}.ln2.weight'
+            source, target = f"encoder.block.{i}", f"layers.{i}"
+            for projection in ("q", "k", "v", "o"):
+                mapping[f"{source}.layer.0.SelfAttention.{projection}.weight"] = (
+                    f"{target}.attention.{projection}.weight")
+            for projection in ("wi_0", "wi_1", "wo"):
+                mapping[f"{source}.layer.1.DenseReluDense.{projection}.weight"] = (
+                    f"{target}.dense.{projection}.weight")
+            mapping[f"{source}.layer.0.layer_norm.weight"] = f"{target}.ln1.weight"
+            mapping[f"{source}.layer.1.layer_norm.weight"] = f"{target}.ln2.weight"
         return mapping
 
     def load_checkpoint(self, weights, head, dtype):
         if dtype not in (mx.float32, mx.bfloat16):
-            raise ValueError('dtype must be mlx.core.float32 or mlx.core.bfloat16')
+            raise ValueError("dtype must be mlx.core.float32 or mlx.core.bfloat16")
         weights = dict(weights)
         # Some T5 exports retain an explicit copy of the tied embedding.
-        alias = weights.pop('encoder.embed_tokens.weight', None)
-        if 'shared.weight' not in weights and alias is not None:
-            weights['shared.weight'] = alias
+        alias = weights.pop("encoder.embed_tokens.weight", None)
+        if "shared.weight" not in weights and alias is not None:
+            weights["shared.weight"] = alias
         elif alias is not None:
-            shared = weights['shared.weight']
+            shared = weights["shared.weight"]
             if alias.shape != shared.shape or not mx.array_equal(alias, shared).item():
-                raise ValueError('Tied encoder embeddings do not match shared.weight')
+                raise ValueError("Tied encoder embeddings do not match shared.weight")
         mapping = self.weight_mapping()
         missing, extra = set(mapping) - set(weights), set(weights) - set(mapping)
         if missing or extra:
-            raise ValueError(f'Encoder weights: missing={sorted(missing)}, unexpected={sorted(extra)}')
-        if set(head) != {'weight', 'bias'}:
-            raise ValueError('Head weights must contain exactly weight and bias')
+            raise ValueError(f"Encoder weights: missing={sorted(missing)}, unexpected={sorted(extra)}")
+        if set(head) != {"weight", "bias"}:
+            raise ValueError("Head weights must contain exactly weight and bias")
         converted = {mapping[k]: v.astype(dtype) for k, v in weights.items()}
-        converted.update({f'head.{k}': v.astype(mx.float32) for k, v in head.items()})
+        converted.update({f"head.{k}": v.astype(mx.float32) for k, v in head.items()})
         expected = dict(tree_flatten(self.parameters()))
         for key, value in converted.items():
             if value.shape != expected[key].shape:
-                raise ValueError(f'{key}: expected shape {expected[key].shape}, got {value.shape}')
+                raise ValueError(f"{key}: expected shape {expected[key].shape}, got {value.shape}")
         self.load_weights(list(converted.items()), strict=True)
         self.eval()
         mx.eval(self.parameters())
 
     @classmethod
     def from_folder(cls, folder: Path, dtype=mx.float32):
-        cfg = SimpleNamespace(**json.loads((Path(folder) / 'config.json').read_text()))
+        cfg = SimpleNamespace(**json.loads((Path(folder) / "config.json").read_text()))
         model = cls(cfg)
-        model.load_checkpoint(mx.load(str(Path(folder) / 'model.safetensors')),
-                              mx.load(str(Path(folder) / 'head.safetensors')), dtype)
+        model.load_checkpoint(mx.load(str(Path(folder) / "model.safetensors")),
+                              mx.load(str(Path(folder) / "head.safetensors")), dtype)
         return model
 
 
@@ -223,7 +223,7 @@ class StateCache:
 
     def __init__(self, max_bytes=512 * 2**20):
         if max_bytes < 0:
-            raise ValueError('max_bytes must be nonnegative')
+            raise ValueError("max_bytes must be nonnegative")
         self.max_bytes = max_bytes
         self._items = OrderedDict()
         self.bytes = 0
