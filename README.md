@@ -68,11 +68,11 @@ from frida_decisions import MlxJudge
 
 judge = MlxJudge.from_pretrained("ai-forever/FRIDA-Decisions")
 response = judge({
-    "state": "I want to keep my phone number while switching operators.",
+    "state": "Хочу перейти к другому оператору и сохранить свой номер.",
     "questions": {"intent": {
         "type": "choice",
-        "instructions": "What is the customer's intent?",
-        "criteria": {"port": "transfer an existing phone number", "new": "get a new phone number"},
+        "instructions": "Какое намерение у клиента?",
+        "criteria": {"port": "перенести существующий номер", "new": "получить новый номер"},
     }},
 })
 ```
