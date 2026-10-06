@@ -139,19 +139,23 @@ The defaults ship with the weights in `decisions_config.json`; edit it in a loca
 | model | parameters | accuracy |
 |---|--:|--:|
 | TypeSafe Jev (commercial API) | — | 0.897 |
+| Qwen/Qwen3.5-35B-A3B, an LLM as a classifier² | 35B (3B active) | 0.897 |
 | **FRIDA-Decisions** | 823M | **0.893** |
 | FRIDA-Decisions, int8 ONNX on CPU | 823M | 0.891 |
+| openai/gpt-oss-20b, an LLM as a classifier² | 21B (3.6B active) | 0.856 |
 | smolnikov/migom-2b | 1.9B | 0.853 |
 | Mapika/decider-2b | 1.9B | 0.833 |
 | smolnikov/kivok-0.3b | 0.3B | 0.619 |
 | fastino/GLiNER2.5-multi-Decide | 287M | 0.576 |
-| convaiinnovations/laya (multilingual) | — | 0.559 |
+| convaiinnovations/laya (multilingual) | 322M | 0.559 |
 | KaLM-Reranker-V1-Nano-R2 | 786M | 0.521 |
 | open-jev (DeBERTa-v3-large) | 437M | 0.490¹ |
 | lexical baseline | — | 0.333 |
 | chance | — | 0.257 |
 
 ¹ 140 of 735 texts exceed open-jev's input window and get no answer from it and count as ties; on the other 595 it scores 0.565.
+
+² Zero-shot through OpenRouter: one call per question at temperature 0, the text, question and options in the prompt, the chosen option key returned as JSON; reasoning off for Qwen3.5, `low` for gpt-oss, which cannot switch it off. Against FRIDA-Decisions (paired McNemar): Qwen3.5-35B-A3B p = 0.84, gpt-oss-20b p = 0.02.
 
 **Latency**, one request, single stream, in process:
 
