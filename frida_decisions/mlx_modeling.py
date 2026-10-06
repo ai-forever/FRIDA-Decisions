@@ -1,8 +1,8 @@
 """Native encoder inference with FRIDA's supplied attention layout.
 
-The layer structure follows the MIT-licensed MLX T5 example:
+The layer structure follows the T5 example in ml-explore/mlx-examples,
 https://github.com/ml-explore/mlx-examples/blob/main/t5/t5.py
-Only the encoder is needed. Buckets and visibility come from packing.py.
+(Copyright (c) 2023 Apple Inc., MIT License). Only the encoder is needed. Buckets and visibility come from packing.py.
 """
 from __future__ import annotations
 
