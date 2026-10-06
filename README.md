@@ -53,6 +53,47 @@ responses = judge.judge_batch([request_1, request_2, request_3])
 
 More in [`examples/quickstart.py`](examples/quickstart.py) and the notebook [`notebooks/quickstart.ipynb`](notebooks/quickstart.ipynb) — run it in Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb)
 
+## MLX on Apple Silicon
+
+`MlxJudge` runs the encoder and decision head in MLX on Apple Silicon Macs.
+It supports all four question types and `judge_batch()` through the shared API.
+In this checkout on an Apple Silicon Mac, install the MLX extra:
+
+```bash
+python -m pip install -e '.[mlx]'
+```
+
+```python
+from frida_decisions import MlxJudge
+
+judge = MlxJudge.from_pretrained("ai-forever/FRIDA-Decisions")
+response = judge({
+    "state": "I want to keep my phone number while switching operators.",
+    "questions": {"intent": {
+        "type": "choice",
+        "instructions": "What is the customer's intent?",
+        "criteria": {"port": "transfer an existing phone number", "new": "get a new phone number"},
+    }},
+})
+```
+
+FP32 (32-bit floating point) is the default encoder precision.
+For BF16 (16-bit floating point), import `mlx.core` and pass `dtype=mlx.core.bfloat16`.
+The decision head stays in FP32 with either precision.
+The loader accepts original Hugging Face weights or a local model folder.
+It rejects missing, extra, or incorrectly shaped weights.
+Use `revision=` to select a model revision.
+
+`rows_per_forward=1` limits attention memory by default.
+The state cache stores encoded text for reuse and defaults to 512 MiB.
+A request with several rows encodes its state once.
+Later requests with the same state token IDs reuse the stored tensors.
+Set `state_cache_mb=0` to disable the cache.
+Call `judge.state_cache.clear()` to remove its entries.
+Set `compile_encoder=False` to disable encoder compilation, which combines GPU operations.
+
+See [the MLX example](examples/mlx_quickstart.py) and `tests/test_mlx*.py` for usage and comparisons with PyTorch.
+
 ## Request and response
 
 A request is a `state` — a string or any JSON value (objects are rendered as compact, key-sorted JSON) — and named `questions`. Each question has a `type`, free-text `instructions` and, depending on the type, `criteria`. Every response carries `answers` (one per question), the raw `margins` of every option, and `usage`.

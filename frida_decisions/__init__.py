@@ -10,7 +10,7 @@ __version__ = "0.3.0"
 __all__ = [
     "PRODUCT_NAME", "DEFAULT_REPO_ID", "QuestionType", "DecisionsConfig",
     "Calibration", "RequestError", "parse_request", "compile_request", "aggregate", "decision",
-    "Judge", "OnnxJudge", "AsyncJudge", "VllmJudge",
+    "Judge", "OnnxJudge", "AsyncJudge", "VllmJudge", "MlxJudge",
 ]
 
 
@@ -39,4 +39,11 @@ def __getattr__(name):
             raise ImportError("VllmJudge needs vLLM (Linux, CUDA GPU): pip install 'frida-decisions[vllm]'") from error
         from .vllm_backend.engine import VllmJudge
         return VllmJudge
+    if name == "MlxJudge":
+        try:
+            import mlx.core  # noqa: F401
+        except ImportError as error:
+            raise ImportError("MlxJudge needs MLX on Apple Silicon: pip install 'frida-decisions[mlx]'") from error
+        from .mlx_backend import MlxJudge
+        return MlxJudge
     raise AttributeError(name)
