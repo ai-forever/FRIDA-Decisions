@@ -20,6 +20,7 @@ dependencies = [
 
 [project.optional-dependencies]
 torch = ["torch>=2.1", "transformers>=4.40"]
+mlx = ["mlx>=0.32.3"]
 onnx = ["onnxruntime>=1.17"]
 # Tested with vLLM 0.29.0 only: the backend uses vLLM's attention-backend and
 # pooler internals, which change between releases.

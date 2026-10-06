@@ -2,6 +2,7 @@
 
     python examples/async_judge.py                      # AsyncJudge over PyTorch, GPU if available
     python examples/async_judge.py --backend onnx       # AsyncJudge over int8 ONNX on CPU
+    python examples/async_judge.py --backend mlx        # AsyncJudge over MLX on Apple Silicon
     python examples/async_judge.py --backend vllm       # VllmJudge: the vLLM engine in this process (Linux, GPU)
     python examples/async_judge.py --model path/to/exported/folder
 
@@ -55,7 +56,7 @@ async def main(args) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", choices=["torch", "onnx", "vllm"], default="torch")
+    parser.add_argument("--backend", choices=["torch", "onnx", "mlx", "vllm"], default="torch")
     parser.add_argument("--model", default=DEFAULT_REPO_ID)
     parser.add_argument("--n", type=int, default=100, help="requests awaited at once")
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.9,

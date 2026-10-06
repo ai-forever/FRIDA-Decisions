@@ -1,4 +1,4 @@
-"""`AsyncJudge`: an async front end for `Judge` (PyTorch) or `OnnxJudge`.
+"""`AsyncJudge`: an async front end for `Judge` (PyTorch), `OnnxJudge` or `MlxJudge`.
 
     judge = AsyncJudge.from_pretrained("ai-forever/FRIDA-Decisions")    # torch, GPU if available
     response = await judge.judge(request)                                # the same response as Judge
@@ -49,7 +49,8 @@ class AsyncJudge:
     @classmethod
     def from_pretrained(cls, path_or_repo: str | Path = DEFAULT_REPO_ID, *, backend: str = "torch",
                         max_batch: int = 8, max_wait_ms: float = 0.0, **kwargs) -> "AsyncJudge":
-        """Load `Judge` (backend="torch") or `OnnxJudge` (backend="onnx") and wrap it.
+        """Load `Judge` (backend="torch"), `OnnxJudge` (backend="onnx") or `MlxJudge`
+        (backend="mlx") and wrap it.
 
         kwargs go to that backend's `from_pretrained` (device, dtype, state_max,
         threads, ...). For torch, `rows_per_forward` defaults to 16 here, so that a
@@ -62,8 +63,11 @@ class AsyncJudge:
         elif backend == "onnx":
             from .onnx_backend import OnnxJudge
             judge = OnnxJudge.from_pretrained(path_or_repo, **kwargs)
+        elif backend == "mlx":
+            from .mlx_backend import MlxJudge
+            judge = MlxJudge.from_pretrained(path_or_repo, **kwargs)
         else:
-            raise ValueError(f"backend must be 'torch' or 'onnx', not {backend!r}")
+            raise ValueError(f"backend must be 'torch', 'onnx' or 'mlx', not {backend!r}")
         return cls(judge, max_batch, max_wait_ms)
 
     # ------------------------------------------------------------------ requests

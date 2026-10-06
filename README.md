@@ -6,7 +6,7 @@
 * **Packed, not repeated.** Questions and options sit next to one copy of the text; a typical request is a single encoder call, and a 243-intent catalog is still one request.
 * **Order-independent by construction.** Options never attend to each other, so adding, removing or reordering options does not change any other option's margin.
 * **Exact state cache.** The text is encoded once and its keys/values are reused across rows and repeated requests — the same margins, less compute.
-* **GPU or CPU.** PyTorch on GPU or CPU, an int8 ONNX model for CPU that does not need torch, or a vLLM server.
+* **GPU or CPU.** PyTorch on GPU or CPU, an int8 ONNX model for CPU that does not need torch, MLX on Apple Silicon, or a vLLM server.
 
 Developed by УЭСМО, SberAI.
 
@@ -17,11 +17,13 @@ Developed by УЭСМО, SberAI.
 pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
 # int8 ONNX backend for CPU, without torch
 pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
+# MLX backend for Apple Silicon, without torch
+pip install "frida-decisions[mlx] @ git+https://github.com/ai-forever/FRIDA-Decisions@main"
 # vLLM server (GPU, Linux)
 pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.3.0"
 ```
 
-The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, `[vllm]`). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
+The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, `[mlx]`, `[vllm]`). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
 
 ## Quickstart
 
@@ -147,8 +149,9 @@ For the 243-intent example in [`examples/data/intent_catalog.json`](examples/dat
 |---|---|---|---|
 | `Judge` (PyTorch) | `[torch]` | GPU (bf16) or CPU (fp32) | packing + exact state cache |
 | `OnnxJudge` (ONNX Runtime) | `[onnx]` | CPU | int8, packing via graph inputs, no state cache |
+| `MlxJudge` (MLX) | `[mlx]` | Apple Silicon (fp32 or bf16) | packing + exact state cache, no torch |
 | vLLM server | `[vllm]` | GPU (bf16), Linux | packing + state cache through vLLM's prefix cache, continuous batching across users |
-| `AsyncJudge` | `[torch]` or `[onnx]` | wherever `Judge` / `OnnxJudge` runs | `await judge.judge(request)`; requests awaited together share `judge_batch` calls |
+| `AsyncJudge` | `[torch]`, `[onnx]` or `[mlx]` | wherever `Judge` / `OnnxJudge` / `MlxJudge` runs | `await judge.judge(request)`; requests awaited together share `judge_batch` calls |
 | `VllmJudge` | `[vllm]` | GPU (bf16), Linux | `await judge.judge(request)` on the vLLM engine in your process: the server's batching and state cache, no HTTP |
 
 The ONNX model is for CPU only. Its weights are int8 (one scale per output channel) and its activations are quantised to int8 on the fly, with one scale per token, while the decision head stays in float32. Quantisation changes the margins: on the 122 decisions of the test set, the ONNX model agrees with PyTorch float32 on 120, and the largest margin difference is 0.65. Where every decision matters, use the PyTorch backend.
@@ -159,6 +162,26 @@ from frida_decisions import OnnxJudge
 judge = OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions", threads=8)
 judge(request)          # same request and response format
 ```
+
+### MLX on Apple Silicon
+
+`MlxJudge` runs the encoder in [MLX](https://github.com/ml-explore/mlx) on the Apple GPU, without torch, with the same packing and exact state cache as `Judge`. The encoder runs in float32 by default; `dtype=mlx.core.bfloat16` halves its memory, and the decision head stays in float32 either way. Contributed by [@akolotov](https://github.com/akolotov).
+
+```python
+from frida_decisions import MlxJudge
+
+judge = MlxJudge.from_pretrained("ai-forever/FRIDA-Decisions")   # float32
+judge(request)          # same request and response format
+```
+
+On razvilka (Apple M4 Pro, `tools/mlx_check.py`) MLX in float32 makes the same 735 decisions as PyTorch float32 on CPU; in bfloat16 it makes 733 of them, and its margin error against float32 (median 0.018, p99 0.108) is that of bfloat16 in PyTorch. A request with a ≈400-token state and 3 questions takes 156 ms in float32 and 139 ms in bfloat16.
+
+* `rows_per_forward` (default 1) caps the packed rows per encoder call, and with it the attention memory; `None` runs all rows at once.
+* `state_cache_mb` (default 512) bounds the state cache, 0 turns it off; `compile_encoder=False` turns off `mx.compile`.
+* `AsyncJudge.from_pretrained(..., backend="mlx")` wraps it like the other judges.
+* PyTorch also runs on a Mac: `Judge.from_pretrained(..., device="mps")` (bfloat16) makes the same 735 decisions on razvilka. MLX in bfloat16 takes 17–19 % less time on the requests above (113 against 139 ms with 1 question, 139 against 168 ms with 3; one run) and does not need torch.
+
+More in [`examples/mlx_quickstart.py`](examples/mlx_quickstart.py).
 
 ### vLLM server
 
@@ -241,6 +264,9 @@ The checks live in [`tests/`](tests) and [`tools/`](tools) (results are written 
 | vLLM server throughput, requests in flight | razvilka (735 requests, ≈260 tokens each), 8 in flight: 60.8 requests/s; short tickets (640 requests, ≈190 tokens, `examples/vllm_client.py --burst 640`): 81 with 8 in flight, 90 with 16 |
 | vLLM server latency, one client over HTTP: ≈400-token state, RTX 5060 Ti, bf16 | 40 ms with 1 question, 44 ms with 3; 34 / 30 ms when the text is already cached |
 | async API, RTX 5060 Ti, bf16, in a vLLM 0.29 container, default settings, `VllmJudge` with 45 % of the GPU, every run with a cold cache (`tools/async_bench.py`) | 256 short tickets (≈190 tokens) awaited at once: `AsyncJudge` over PyTorch 187 requests/s (186–189 over 5 runs), `VllmJudge` 126 (125–127); razvilka, 735 items, 32 in flight: 58 (58–58 over 3 runs) and 69 (69–69). Both make the same decisions as PyTorch float32 on the test requests (15/15, `tools/async_check.py`) |
+| MLX vs PyTorch float32 (CPU) on razvilka, Apple M4 Pro, MLX 0.32.3 (`tools/mlx_check.py`) | float32: 735/735 same decisions, max margin drift 2.9e-05; bfloat16: 733/735, accuracy 0.891 vs 0.894, margin error median 0.018, p99 0.108 over 3,762 options (PyTorch bf16 on a GPU: 0.017 / 0.102); PyTorch on MPS, bfloat16: 735/735, margin error 0.017 / 0.108. MLX state cache vs packed rows on the intent catalog: max drift 1.2e-05 (float32). Under `AsyncJudge` (worker thread, 14 requests batched), margins within 1.2e-05 of direct calls; a batched call scores the catalog through packed rows, not the state cache |
+| latency on Apple M4 Pro, one request: ≈400-token state (`state_max=512`), median of 30 after warm-up (`tools/mlx_check.py`) | MLX float32 126 ms with 1 question, 156 ms with 3; MLX bfloat16 113 / 139 ms; PyTorch on MPS 139 / 168 ms in bfloat16, 152 / 186 ms in float32 |
+| peak MLX memory over the whole run above (load, razvilka, intent catalog, latency), `rows_per_forward=1` | 4.6 GiB in float32, 2.2 GiB in bfloat16 |
 | accuracy on razvilka (735 items) | 0.893 (PyTorch bf16, GPU), see the model card |
 
 GPU parity with the CPU path was smoke-tested on 15 decisions (`tools/gpu_parity.py`, all equal); the razvilka run above is the larger check.
@@ -276,7 +302,7 @@ python tools/export_onnx.py --model-dir _export/FRIDA-Decisions
 pytest -s
 ```
 
-Model tests are skipped when no exported folder is present (`FD_MODEL_DIR`). The vLLM backend's own tests run on CPU without vLLM; a running server is checked against `Judge` with
+Model tests are skipped when no exported folder is present (`FD_MODEL_DIR`). The MLX tests (`tests/test_mlx*.py`) need `pip install -e ".[dev,mlx]"` and run on Apple Silicon; `tools/mlx_check.py` runs the razvilka comparison and the latency above. The vLLM backend's own tests run on CPU without vLLM; a running server is checked against `Judge` with
 
 ```bash
 python tools/vllm_parity.py --reference-only          # float32 reference on CPU, before starting the server

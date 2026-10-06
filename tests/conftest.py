@@ -5,8 +5,11 @@ Model tests need an exported model folder; they are skipped without one.
     FD_MODEL_DIR       exported folder (default: _export/FRIDA-Decisions)
     FD_EXTRA_CASES     optional JSON list of {"name", "request"} added to the cases
     FD_THREADS         CPU threads for torch and onnxruntime (default 6)
+    FD_MLX_ONLY_PYTHON optional interpreter of an environment with `[mlx]` and no torch,
+                       for the MLX-only inference test
 
-Every test runs on CPU. Measured numbers are printed and written to
+Every test runs on CPU, except the MLX tests, which run on MLX's default device
+(the GPU on Apple Silicon) and are skipped without MLX. Measured numbers are printed and written to
 `tests/_results/<name>.json`.
 """
 from __future__ import annotations
