@@ -1,5 +1,7 @@
 # FRIDA-Decisions
 
+**[Article on Habr (in Russian)](https://habr.com/ru/companies/sberbank/articles/1092056/)** · **[Model](https://huggingface.co/ai-forever/FRIDA-Decisions)** · **[Demo](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions)** · **[Benchmark: razvilka](https://huggingface.co/datasets/artemsnegirev/razvilka)** · **[Colab quickstart](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb)**
+
 **FRIDA-Decisions answers structured questions about a text — pick an option, place it on a scale, say yes or no, rank candidates — and returns probabilities, not generated text.** All questions about one text, and all their options, are scored together by the [FRIDA](https://huggingface.co/ai-forever/FRIDA) encoder in packed sequences — the text is never re-encoded per option, and there is no decoding, no output tokens, no answer parsing.
 
 * **Four question types** in one request: `choice`, `score`, `noul` (yes/no) and `ranking`.
