@@ -115,28 +115,7 @@ Measured with the command above plus `--gpu-memory-utilization 0.45` (the card a
 
 ### Filtering `ranking` candidates by a threshold
 
-A `ranking` answer carries both `probabilities` — a softmax over the list, which splits one unit among the candidates and therefore cannot filter — and `scores`, the raw margin of each candidate, computed independently of the others. Use `scores` for top-k or a threshold.
-
-Their level, though, is not calibrated: `ranking` is trained with a listwise softmax, which depends only on differences inside one list, so nothing pins where a particular request's margins sit. On the relevance task of razvilka (50 queries, 5 candidates, one relevant and four annotated negatives) the level ranges −1.88 to +10.84 with sd 2.32, against a median gap of +4.92 between the relevant candidate and the best irrelevant one. A single global threshold therefore reaches AUC 0.923 and F1 0.769, while the ordering inside a request is far better than that (top-1 0.900, AUC 0.950).
-
-Subtracting the request's own candidates recovers most of the loss, because in a retriever's top-k most candidates are irrelevant and their margins are where that request's "irrelevant" sits. The held-out column fits the threshold on four fifths of the queries and scores it on the rest:
-
-| threshold on | AUC (95 % CI) | best single threshold | held-out F1 |
-|---|---|---|---|
-| `scores` as they are | 0.923 (0.882–0.959) | +6.76 → F1 0.769 | 0.752 |
-| `scores` minus a fixed anchor candidate | 0.929 (0.890–0.964) | +7.18 → F1 0.774 | 0.732 |
-| `scores` minus the median of the request's own candidates | 0.951 (0.910–0.982) | +4.40 → F1 0.835 | 0.796 |
-| `scores` minus the mean of the request's own candidates | 0.972 (0.943–0.992) | +3.52 → F1 0.882 | 0.855 |
-
-```python
-scores = judge(request)["answers"]["best"]["scores"]
-level = sum(scores.values()) / len(scores)
-relevant = [key for key, score in scores.items() if score - level >= 3.5]
-```
-
-An anchor candidate — one extra candidate whose text says it is not an answer — does not work: its own margin hardly moves with the request (sd 0.65, correlation with the request's level +0.22), so subtracting it removes noise rather than the offset.
-
-Three things the recipe does not do. **+3.5 is not a constant**: it is fitted on lists of five with one relevant candidate, and kept unchanged on shorter lists it loses recall (three candidates F1 0.837, two 0.689), because the relevant candidate is part of the mean; refitted, those reach 0.917 and 0.953. **It cannot say that nothing is relevant** — with the relevant candidate dropped, 5.5 % of the remaining negatives still clear +3.52 (7.0 % clear the raw +6.76); for an absolute per-candidate probability ask `noul` per candidate, which is trained with a pairwise objective and returns a probability in 0…1. **Lists with several relevant candidates are not measured**: this task has exactly one, so the numbers describe a pool that is 20 % relevant, over 50 queries. Reproduce with [`tools/ranking_threshold.py`](https://github.com/ai-forever/FRIDA-Decisions/blob/main/tools/ranking_threshold.py).
+`probabilities` split one unit among the candidates, so they order but cannot filter. To keep only the relevant candidates, threshold `scores` against the request's own list (each score minus the mean of its candidates), not as raw values. The recipe, its numbers on razvilka and its limits are in the [repository README](https://github.com/ai-forever/FRIDA-Decisions#filtering-ranking-candidates-by-a-threshold); [`examples/quickstart.py`](https://github.com/ai-forever/FRIDA-Decisions/blob/main/examples/quickstart.py) and the [Colab notebook](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) filter a retriever's output.
 
 ### Input length
 
