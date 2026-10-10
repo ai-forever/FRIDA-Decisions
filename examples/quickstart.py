@@ -1,4 +1,4 @@
-"""Quickstart: a first request, the four question types, then a 243-intent catalog.
+"""Quickstart: a first request, the four question types, filtering, a 243-intent catalog.
 
     python examples/quickstart.py                       # torch, GPU if available
     python examples/quickstart.py --device cpu
@@ -86,6 +86,43 @@ EXAMPLES = {
 }
 
 
+# Filtering, not just ordering: a retriever's top-k for the same question, where
+# the two passages that answer it are a minority. The four candidates above are
+# in here unchanged, which is also the point -- a candidate's margin does not
+# depend on what else is in the list.
+RETRIEVED = dict(
+    EXAMPLES["ranking"]["questions"]["best"]["criteria"],
+    p5="Накипь образуется из солей кальция и магния, растворённых в воде; в жёсткой воде её больше.",
+    p6="Гарантия на бытовую технику не покрывает поломки из-за нарушения правил эксплуатации.",
+    p7="Для заварки зелёного чая возьмите воду около 80 градусов и настаивайте две минуты.",
+    p8="Фильтр-кувшин смягчает воду и поэтому реже приходится чистить бытовые приборы.",
+    p9="Доставка заказов по городу занимает от одного до трёх рабочих дней.",
+)
+# How far above its own list a candidate has to stand. Fitted on razvilka, on
+# lists where one candidate in five is relevant (`tools/ranking_threshold.py`);
+# re-fit it on lists the shape of yours.
+THRESHOLD = 3.5
+
+
+def relevance(judge, criteria: dict) -> list[tuple[str, float, float]]:
+    """(id, margin, distance above the list) for one ranking request, best first.
+
+    `scores` are the raw margins, and only differences inside one request are
+    meaningful: the level of a request is not calibrated. The level of the
+    request's own candidates estimates it, because in a retriever's top-k most
+    candidates are irrelevant.
+    """
+    request = {"state": "Как удалить накипь из чайника?",
+               "questions": {"best": {
+                   "type": "ranking",
+                   "instructions": "Какой фрагмент лучше всего отвечает на вопрос?",
+                   "criteria": criteria}}}
+    scores = judge(request)["answers"]["best"]["scores"]
+    level = sum(scores.values()) / len(scores)
+    return sorted(((key, score, score - level) for key, score in scores.items()),
+                  key=lambda row: -row[1])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=DEFAULT_REPO_ID)
@@ -115,6 +152,20 @@ def main():
     for kind, request in EXAMPLES.items():
         (qid, answer), = judge(request)["answers"].items()
         print(f"{kind}:", json.dumps(answer, ensure_ascii=False))
+
+    # Filtering passages by a threshold, and what the threshold depends on.
+    print(f"\nretrieved {len(RETRIEVED)} passages, keeping those more than "
+          f"{THRESHOLD} above their own list:")
+    for key, margin, distance in relevance(judge, RETRIEVED):
+        kept = "kept" if distance >= THRESHOLD else ""
+        print(f"  {key}  margin {margin:+6.2f}  above the list {distance:+6.2f}  {kept}")
+
+    # The same question over the four passages alone. Two of the four answer it,
+    # so they pull the level of the list up and the same threshold keeps nobody:
+    # it belongs to the shape of the list, not to the model.
+    four = relevance(judge, EXAMPLES["ranking"]["questions"]["best"]["criteria"])
+    print(f"  the same four passages on their own: best is {four[0][0]} at "
+          f"{four[0][2]:+.2f} above the list, so nothing clears {THRESHOLD}")
 
     catalog = json.loads((Path(__file__).parent / "data" / "intent_catalog.json")
                          .read_text(encoding="utf-8"))
