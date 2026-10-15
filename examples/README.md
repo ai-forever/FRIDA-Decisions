@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [value_extraction](value_extraction/) | Регулярка находит строки, choice выбирает нужную | choice | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-value_extraction/examples/value_extraction/value_extraction.ipynb) | [`value_extraction.py`](value_extraction/value_extraction.py) |
