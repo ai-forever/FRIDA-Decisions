@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [llm_guardrails](llm_guardrails/) | pass / review / block по вероятностям рисков и тяжести | noul, score | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-llm_guardrails/examples/llm_guardrails/llm_guardrails.ipynb) | [`llm_guardrails.py`](llm_guardrails/llm_guardrails.py) |
