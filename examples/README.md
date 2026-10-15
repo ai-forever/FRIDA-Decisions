@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [hierarchical_classification](hierarchical_classification/) | Beam search по дереву категорий, откат к родителю при низкой confidence | choice | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-hierarchical_classification/examples/hierarchical_classification/hierarchical_classification.ipynb) | [`hierarchical_classification.py`](hierarchical_classification/hierarchical_classification.py) |
