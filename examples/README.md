@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [parallel_questions](parallel_questions/) | Много вопросов одним запросом против отдельного запроса на каждый | choice, score, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-parallel_questions/examples/parallel_questions/parallel_questions.ipynb) | [`parallel_questions.py`](parallel_questions/parallel_questions.py) |
