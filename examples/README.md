@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [chat_filter](chat_filter/) | Правила чата в коде, сообщения параллельно через AsyncJudge | noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-chat_filter/examples/chat_filter/chat_filter.ipynb) | [`chat_filter.py`](chat_filter/chat_filter.py) |
