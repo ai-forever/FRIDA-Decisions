@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [composite_scoring](composite_scoring/) | Несколько атомарных score, веса и порог в коде | score | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-composite_scoring/examples/composite_scoring/composite_scoring.ipynb) | [`composite_scoring.py`](composite_scoring/composite_scoring.py) |
