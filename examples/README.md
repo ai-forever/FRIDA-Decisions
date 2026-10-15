@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [text_features](text_features/) | Ответы noul и score как признаки логистической регрессии | noul, score | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-text_features/examples/text_features/text_features.ipynb) | [`text_features.py`](text_features/text_features.py) |
