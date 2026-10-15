@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [skill_suggestion](skill_suggestion/) | Топ-k по ranking на каталоге интентов, перепроверка noul | ranking, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-skill_suggestion/examples/skill_suggestion/skill_suggestion.ipynb) | [`skill_suggestion.py`](skill_suggestion/skill_suggestion.py) |
