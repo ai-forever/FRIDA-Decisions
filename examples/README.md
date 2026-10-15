@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [rag_filtering](rag_filtering/) | BM25, затем ranking и noul: что отдать в контекст | ranking, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-rag_filtering/examples/rag_filtering/rag_filtering.ipynb) | [`rag_filtering.py`](rag_filtering/rag_filtering.py) |
