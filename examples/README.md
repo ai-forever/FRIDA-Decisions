@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [citation_check](citation_check/) | Подтверждает ли фрагмент утверждение, или данных не хватает | choice | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-citation_check/examples/citation_check/citation_check.ipynb) | [`citation_check.py`](citation_check/citation_check.py) |
