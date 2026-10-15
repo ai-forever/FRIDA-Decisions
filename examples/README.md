@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [entity_alignment](entity_alignment/) | Один ли это товар: score решает, noul по бренду и артикулу рядом | score, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-entity_alignment/examples/entity_alignment/entity_alignment.ipynb) | [`entity_alignment.py`](entity_alignment/entity_alignment.py) |
