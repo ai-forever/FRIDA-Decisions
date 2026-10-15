@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [function_calling](function_calling/) | Выбор функции и аргументов из закрытых списков, числа — регуляркой | choice | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/grok/examples-function_calling/examples/function_calling/function_calling.ipynb) | [`function_calling.py`](function_calling/function_calling.py) |
