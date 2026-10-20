@@ -1,9 +1,9 @@
 """Ask a dozen questions in one request and compare that with one request each.
 
-    python examples/parallel_questions/parallel_questions.py
-    python examples/parallel_questions/parallel_questions.py --device cpu
-    python examples/parallel_questions/parallel_questions.py --onnx
-    python examples/parallel_questions/parallel_questions.py --model path/to/exported/folder
+    python examples/parallel_questions.py
+    python examples/parallel_questions.py --device cpu
+    python examples/parallel_questions.py --onnx
+    python examples/parallel_questions.py --model path/to/exported/folder
 """
 from __future__ import annotations
 

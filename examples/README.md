@@ -1,43 +1,40 @@
 # Examples
 
-Прикладные примеры FRIDA-Decisions. Модель отвечает на типизированные вопросы о тексте и возвращает вероятности; решение — порог, вес, маршрут — собирается в коде, а не в промпте. Соседние постановки задач: [cookbooks TypeSafe](https://docs.typesafe.ai/cookbooks) и [patterns](https://docs.typesafe.ai/patterns).
+FRIDA-Decisions answers typed questions about a text — `choice`, `score`, `noul` (yes/no), `ranking` — and returns probabilities. The decision itself, the threshold, the weight, the route, is ordinary code. That is what these notebooks are about: each one takes a task that is usually handed to an LLM prompt, and keeps the judgement in code where it can be measured and changed.
 
-Каждый сценарий — папка: ноутбук, который открывается в Colab, скрипт с теми же вопросами и той же логикой. Данные лежат в коде (`DATA`), файлов рядом нет. Номера в ноутбуках — вывод выполненного прогона на Colab CPU, не иллюстрация.
+Every notebook opens in Colab, installs the package and runs end to end on a CPU runtime. The data lives in the notebook, in a `DATA` list, and is synthetic. Set `FD_MODEL` to a local exported folder to run against your own copy instead of the Hub.
 
-Скрипт запускается так же, как [`quickstart.py`](quickstart.py):
+The numbers printed in the notebooks were recorded on one machine: an AMD Ryzen 5 7500F, 6 cores, torch on 6 threads, float32, no GPU. That is torch float32 on a CPU, the slowest path the package offers: the guardrail cell takes 14.3 s there and 0.45 s on an RTX 5060 Ti in bfloat16, and `OnnxJudge` is about 2.5x faster than torch float32 on the same CPU (see the repository README). The decisions do not change with the path; the last digit of a probability can.
 
-```bash
-python examples/<имя>/<имя>.py                 # torch, GPU если есть, иначе CPU
-python examples/<имя>/<имя>.py --device cpu
-python examples/<имя>/<имя>.py --onnx          # int8 ONNX на CPU
-python examples/<имя>/<имя>.py --model path/to/exported/folder
-```
+## Scenarios
 
-`skill_suggestion` по умолчанию ранжирует пул из 40 интентов: `fast=True` в ноутбуке, `--full` у скрипта даёт все 243.
+| Notebook | What it teaches | Question types | Colab |
+| --- | --- | --- | --- |
+| [Route support tickets by confidence](support_triage.ipynb) | A confidence gate: route what the model is sure about, hand the rest to a person | `choice`, `score`, `noul` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/support_triage.ipynb) |
+| [Screen messages: risks, severity, and rules in code](guardrails.ipynb) | Several yes/no risks and a severity scale; the action is a rule in code | `noul`, `score` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/guardrails.ipynb) |
+| [Classify down a tree, and stop when confidence drops](hierarchical_classification.ipynb) | Walk down a category tree and fall back to the parent when a step is not confident | `choice` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/hierarchical_classification.ipynb) |
+| [Check a claim against the source](citation_check.ipynb) | Supported, contradicted, or not in the source — with a verdict a person can check | `choice` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/citation_check.ipynb) |
+| [Filter passages before they reach the answering model](rag_filtering.ipynb) | Re-rank a retriever's shortlist, and drop it when nothing in it answers | `ranking`, `noul` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/rag_filtering.ipynb) |
+| [Suggest one intent from a large catalog](skill_suggestion.ipynb) | Rank a 243-intent catalog, then re-check the top few and abstain if none fits | `ranking`, `noul` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/skill_suggestion.ipynb) |
+| [Call an ordinary function](function_calling.ipynb) | Pick the function and its closed arguments in one request; numbers come from a regex | `choice` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/function_calling.ipynb) |
+| [Pick a span the regex already found](value_extraction.ipynb) | A regex proposes the spans, the model picks one of them or `none` | `choice` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/value_extraction.ipynb) |
+| [Align two product cards](entity_alignment.ipynb) | Are these two cards the same product? A score decides, two yes/no checks explain | `score`, `noul` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/entity_alignment.ipynb) |
+| [Combine atomic scores with your own weights](composite_scoring.ipynb) | Score each factor on its own, then keep the weights and the cutoff in code | `score` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/composite_scoring.ipynb) |
+| [Use the answers as features](text_features.ipynb) | Answers as columns: a few probabilities and a score feed an ordinary classifier | `noul`, `score` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/text_features.ipynb) |
+| [Ask everything in one request](parallel_questions.ipynb) | A dozen questions in one encoder pass against one question per call | `choice`, `score`, `noul` | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/parallel_questions.ipynb) |
 
-## Уже в репозитории
+`parallel_questions` also ships as a script, [`parallel_questions.py`](parallel_questions.py): it is a measurement you re-run, not a text you read once.
 
-| Пример | Что показывает | Типы вопросов | Colab | Скрипт |
-| --- | --- | --- | --- | --- |
-| Quickstart | Первый запрос, четыре типа вопросов, порог по `ranking`, каталог из 243 интентов | choice, score, noul, ranking | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) | [`quickstart.py`](quickstart.py) |
-| Async | `await judge.judge`: несколько запросов одновременно попадают в один `judge_batch` | choice, noul | — | [`async_judge.py`](async_judge.py) |
-| MLX | Тот же запрос на Apple Silicon, без torch | choice | — | [`mlx_quickstart.py`](mlx_quickstart.py) |
-| vLLM | Клиент к серверу vLLM: один текст, повтор по тому же тексту, каталог, burst | choice | — | [`vllm_client.py`](vllm_client.py) |
+## Start here, and serving
 
-## Сценарии
+| | | |
+| --- | --- | --- |
+| [Quickstart notebook](../notebooks/quickstart.ipynb) | The first request, the four question types, a threshold on `ranking`, a 243-intent catalog | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) |
+| [`quickstart.py`](quickstart.py) | The same, as a script | |
+| [`async_judge.py`](async_judge.py) | `await judge.judge`: concurrent requests collected into one `judge_batch` | |
+| [`mlx_quickstart.py`](mlx_quickstart.py) | The same request on Apple Silicon, without torch | |
+| [`vllm_client.py`](vllm_client.py) | A client for the vLLM server: one text, a repeat of it, a catalog, a burst | |
 
-| Пример | Что показывает | Типы вопросов | Colab | Скрипт |
-| --- | --- | --- | --- | --- |
-| [support_triage](support_triage/) | Маршрут обращения по confidence: команда, срочность, риск ухода | choice, score, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/support_triage/support_triage.ipynb) | [`support_triage.py`](support_triage/support_triage.py) |
-| [llm_guardrails](llm_guardrails/) | pass / review / block по вероятностям рисков и тяжести | noul, score | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/llm_guardrails/llm_guardrails.ipynb) | [`llm_guardrails.py`](llm_guardrails/llm_guardrails.py) |
-| [rag_filtering](rag_filtering/) | BM25, затем ranking и noul: что отдать в контекст | ranking, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/rag_filtering/rag_filtering.ipynb) | [`rag_filtering.py`](rag_filtering/rag_filtering.py) |
-| [function_calling](function_calling/) | Выбор функции и аргументов из закрытых списков, числа — регуляркой | choice | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/function_calling/function_calling.ipynb) | [`function_calling.py`](function_calling/function_calling.py) |
-| [composite_scoring](composite_scoring/) | Несколько атомарных score, веса и порог в коде | score | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/composite_scoring/composite_scoring.ipynb) | [`composite_scoring.py`](composite_scoring/composite_scoring.py) |
-| [parallel_questions](parallel_questions/) | Много вопросов одним запросом против отдельного запроса на каждый | choice, score, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/parallel_questions/parallel_questions.ipynb) | [`parallel_questions.py`](parallel_questions/parallel_questions.py) |
-| [hierarchical_classification](hierarchical_classification/) | Beam search по дереву категорий, откат к родителю при низкой confidence | choice | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/hierarchical_classification/hierarchical_classification.ipynb) | [`hierarchical_classification.py`](hierarchical_classification/hierarchical_classification.py) |
-| [skill_suggestion](skill_suggestion/) | Топ-k по ranking на каталоге интентов, перепроверка noul | ranking, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/skill_suggestion/skill_suggestion.ipynb) | [`skill_suggestion.py`](skill_suggestion/skill_suggestion.py) |
-| [citation_check](citation_check/) | Подтверждает ли фрагмент утверждение, или данных не хватает | choice | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/citation_check/citation_check.ipynb) | [`citation_check.py`](citation_check/citation_check.py) |
-| [value_extraction](value_extraction/) | Регулярка находит строки, choice выбирает нужную | choice | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/value_extraction/value_extraction.ipynb) | [`value_extraction.py`](value_extraction/value_extraction.py) |
-| [entity_alignment](entity_alignment/) | Один ли это товар: score решает, noul по бренду и артикулу рядом | score, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/entity_alignment/entity_alignment.ipynb) | [`entity_alignment.py`](entity_alignment/entity_alignment.py) |
-| [chat_filter](chat_filter/) | Правила чата в коде, сообщения параллельно через AsyncJudge | noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/chat_filter/chat_filter.ipynb) | [`chat_filter.py`](chat_filter/chat_filter.py) |
-| [text_features](text_features/) | Ответы noul и score как признаки логистической регрессии | noul, score | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/text_features/text_features.ipynb) | [`text_features.py`](text_features/text_features.py) |
+## Adding one
+
+Open a pull request. A scenario is one notebook in this folder, English prose with the data in the notebook, a row in the table above, and output from a run you actually did. If it needs a package beyond the model, install it in the notebook's first cell.
