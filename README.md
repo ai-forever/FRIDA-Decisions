@@ -57,6 +57,8 @@ responses = judge.judge_batch([request_1, request_2, request_3])
 
 More in [`examples/quickstart.py`](examples/quickstart.py) and the notebook [`notebooks/quickstart.ipynb`](notebooks/quickstart.ipynb) — run it in Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb)
 
+Worked scenarios (routing, guardrails, retrieval, tool choice, and others) are indexed in [`examples/README.md`](examples/README.md).
+
 ## Request and response
 
 A request is a `state` — a string or any JSON value (objects are rendered as compact, key-sorted JSON) — and named `questions`. Each question has a `type`, free-text `instructions` and, depending on the type, `criteria`. Every response carries `answers` (one per question), the raw `margins` of every option, and `usage`.
