@@ -28,3 +28,4 @@ python examples/<имя>/<имя>.py --model path/to/exported/folder
 
 | Пример | Что показывает | Типы вопросов | Colab | Скрипт |
 | --- | --- | --- | --- | --- |
+| [support_triage](support_triage/) | Маршрут обращения по confidence: команда, срочность, риск ухода | choice, score, noul | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/examples/support_triage/support_triage.ipynb) | [`support_triage.py`](support_triage/support_triage.py) |
