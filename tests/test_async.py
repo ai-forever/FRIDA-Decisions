@@ -22,7 +22,7 @@ from types import SimpleNamespace
 import pytest
 from conftest import flat_margins, load_cases, record
 
-from frida_decisions import AsyncJudge, RequestError
+from frida_decisions import AsyncJudge, Calibration, RequestError
 from frida_decisions.protocol import decision
 
 REQUEST = {"state": "текст", "questions": {"q": {"type": "noul", "instructions": "Да?"}}}
@@ -100,11 +100,12 @@ def test_cancelled_caller_does_not_block_others():
     assert asyncio.run(main()) == ({"echo": "a"}, {"echo": "c"}, True)
 
 
-def test_close_leaves_no_one_waiting():
+@pytest.mark.parametrize("max_batch", [2, 4], ids=["scoring", "collecting"])
+def test_close_leaves_no_one_waiting(max_batch):
     async def main():
-        judge = AsyncJudge(StandIn(delay=0.2), max_batch=1)
-        tasks = [asyncio.create_task(judge.judge(with_state(f"t{i}"))) for i in range(3)]
-        await asyncio.sleep(0.05)                       # the first one is being scored
+        judge = AsyncJudge(StandIn(delay=0.2), max_batch=max_batch, max_wait_ms=60_000)
+        tasks = [asyncio.create_task(judge.judge(REQUEST, cal)) for cal in (None, Calibration(), None)]
+        await asyncio.sleep(0.05)
         await asyncio.wait_for(judge.close(), 5)
         results = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), 5)
         with pytest.raises(RuntimeError):

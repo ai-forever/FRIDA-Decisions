@@ -43,7 +43,7 @@ class AsyncJudge:
         self._queue: asyncio.Queue | None = None
         self._worker: asyncio.Task | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
-        self._inflight: list = []          # the batch the worker thread is scoring now
+        self._inflight: list = []          # all requests taken from the queue for the current batch
         self._closed = False
 
     @classmethod
@@ -99,7 +99,7 @@ class AsyncJudge:
     async def _work(self) -> None:
         loop = asyncio.get_running_loop()
         while True:
-            batch = [await self._queue.get()]
+            batch = self._inflight = [await self._queue.get()]
             deadline = loop.time() + self.max_wait
             while len(batch) < self.max_batch:
                 if not self._queue.empty():
@@ -118,7 +118,6 @@ class AsyncJudge:
             for item in batch:
                 groups.setdefault(item[1], []).append(item)
             for calibration, items in groups.items():
-                self._inflight = items
                 try:
                     responses = await loop.run_in_executor(
                         self._executor, self.wrapped.judge_batch, [r for r, _, _ in items], calibration)
