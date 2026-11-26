@@ -14,6 +14,8 @@ from sglang.srt.runtime_context import get_model
 from torch import nn
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from sglang.srt.layers.quantization.base_config import QuantizationConfig
     from sglang.srt.model_executor.forward_batch_info import ForwardBatch
     from transformers import PretrainedConfig
@@ -61,6 +63,13 @@ class Qwen35JointEmbedding(Qwen3_5ForConditionalGeneration):
                 checkpoint.load_projection(),
                 device=next(self.parameters()).device,
             )
+        )
+
+    def load_weights(self, weights: Iterable[tuple[str, torch.Tensor]]) -> set[str]:
+        """Map Sentence Transformers backbone names to SGLang's multimodal checkpoint layout."""
+        return super().load_weights(
+            ("model." + name if name.startswith("language_model.") else name, tensor)
+            for name, tensor in weights
         )
 
     @torch.no_grad()

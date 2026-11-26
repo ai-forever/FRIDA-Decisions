@@ -62,7 +62,10 @@ def test_native_multimodal_forward_and_st_projection(tmp_path, monkeypatch):
     torch.testing.assert_close(result.embeddings[0], torch.nn.functional.normalize(hidden @ weight.T, dim=-1))
     with pytest.raises(ValueError, match='only supports embeddings'):
         model(batch.input_ids, torch.arange(3), batch, get_embedding=False)
-    assert model.load_weights([('model.visual.weight', torch.ones(1))]) == {'model.visual.weight'}
+    names = ['language_model.layers.0.weight', 'model.language_model.norm.weight', 'visual.weight']
+    assert model.load_weights([(n, torch.ones(1)) for n in names]) == {
+        'model.language_model.layers.0.weight', 'model.language_model.norm.weight', 'visual.weight'
+    }
     stub('sglang.srt.multimodal.processors.qwen_vl', QwenVLImageProcessor=type('NativeProcessor', (), {}))
     processor_path = root / 'sglang-integration/src/inference_plugins_sglang/processors/qwen35_joint.py'
     spec = importlib.util.spec_from_file_location('test_joint_mm_processor', processor_path)
