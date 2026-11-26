@@ -6,6 +6,7 @@ FRIDA is a family of models for retrieval and structured decision-making.
 | --- | --- |
 | [FRIDA-Decisions](#frida-decisions) | Answer structured questions about a text and return probabilities for the answer options. |
 | [FRIDA-Embeddings](embeddings/) | Encode text and images as dense and token-level vectors for retrieval. |
+| [Razvilka](benchmarks/razvilka/) | Evaluate structured decisions on 735 Russian examples across 15 tasks. |
 
 ## FRIDA-Decisions
 
