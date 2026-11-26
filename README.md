@@ -1,11 +1,11 @@
 # FRIDA
 
-FRIDA объединяет модели для поиска и принятия решений.
+FRIDA is a family of models for retrieval and structured decision-making.
 
-| Проект | Что делает |
+| Project | Purpose |
 | --- | --- |
-| [FRIDA-Decisions](#frida-decisions) | Отвечает на структурированные вопросы по тексту и возвращает вероятности вариантов. |
-| [FRIDA-Embeddings](embeddings/) | Строит dense- и токенные векторы для поиска по текстам и изображениям. |
+| [FRIDA-Decisions](#frida-decisions) | Answer structured questions about a text and return probabilities for the answer options. |
+| [FRIDA-Embeddings](embeddings/) | Encode text and images as dense and token-level vectors for retrieval. |
 
 ## FRIDA-Decisions
 

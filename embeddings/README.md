@@ -1,10 +1,8 @@
 # FRIDA-Embeddings
 
-Выберите релиз, с которым работаете.
-
-| Релиз | Модель | Инференс |
+| Release | Model | Inference |
 | --- | --- | --- |
-| V2 | [FRIDA-Embeddings-V2-2B](https://huggingface.co/ai-forever/FRIDA-Embeddings-V2-2B) | [Текст и изображения через Sentence Transformers, vLLM и SGLang](v2/inference/) |
-| V1 | [FRIDA](https://huggingface.co/ai-forever/FRIDA) | Пример использования в карточке модели |
+| V2 | [FRIDA-Embeddings-V2-2B](https://huggingface.co/ai-forever/FRIDA-Embeddings-V2-2B) | [Text and image retrieval with Sentence Transformers, vLLM, or SGLang](v2/inference/) |
+| V1 | [FRIDA](https://huggingface.co/ai-forever/FRIDA) | See the usage example in the model card. |
 
-[Статья о FRIDA-Embeddings V2 на Хабре](https://habr.com/ru/companies/sberbank/articles/1112312/)
+[FRIDA-Embeddings V2 on Habr (in Russian)](https://habr.com/ru/companies/sberbank/articles/1112312/)
