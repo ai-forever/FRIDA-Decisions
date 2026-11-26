@@ -1,6 +1,6 @@
 # Примеры инференса
 
-Запускайте команды из `embeddings/joint-inference`. Вместо `/models/frida` подставьте путь к полной модели в формате Sentence Transformers.
+Запускайте команды из `embeddings/v2/inference`. Вместо `/models/frida` подставьте путь к полной модели в формате Sentence Transformers.
 
 | Что проверить | Пример |
 | --- | --- |

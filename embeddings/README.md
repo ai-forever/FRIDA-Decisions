@@ -1,9 +1,10 @@
 # FRIDA-Embeddings
 
-Здесь живут проекты семейства FRIDA для поиска. У каждого проекта свой каталог, инструкции по установке и зависимости.
+Выберите релиз, с которым работаете.
 
-| Проект | Для чего нужен |
-| --- | --- |
-| [Joint inference](joint-inference/) | Получить один dense-вектор и набор токенных векторов за один проход FRIDA-Embeddings-V2-2B. Поддерживаются тексты и изображения. |
+| Релиз | Модель | Инференс |
+| --- | --- | --- |
+| V2 | [FRIDA-Embeddings-V2-2B](https://huggingface.co/ai-forever/FRIDA-Embeddings-V2-2B) | [Текст и изображения через Sentence Transformers, vLLM и SGLang](v2/inference/) |
+| V1 | [FRIDA](https://huggingface.co/ai-forever/FRIDA) | Пример использования в карточке модели |
 
-[Модель FRIDA-Embeddings-V2-2B на Hugging Face](https://huggingface.co/ai-forever/FRIDA-Embeddings-V2-2B) · [Статья на Хабре](https://habr.com/ru/companies/sberbank/articles/1112312/)
+[Статья о FRIDA-Embeddings V2 на Хабре](https://habr.com/ru/companies/sberbank/articles/1112312/)
