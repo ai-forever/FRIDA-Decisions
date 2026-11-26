@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "joint-inference-vllm"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["huggingface-hub", "numpy", "orjson", "joint-inference-core", "vllm>=0.32.0"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+vllm = { git = "https://github.com/vllm-project/vllm.git", rev = "b7186d137addf271d4dd24c8d73c9985437baddc" }
+joint-inference-core = { path = "../core", editable = true }
+
+[project.entry-points."vllm.general_plugins"]
+joint_embeddings = "inference_plugins_vllm:register_vllm"
+
+[project.entry-points."vllm.io_processor_plugins"]
+joint_embeddings = "inference_plugins_vllm:register_io_processor"
+
+[project.entry-points."vllm.endpoint_plugins"]
+joint_embeddings = "inference_plugins_vllm.endpoint:JointPoolingEndpoint"
+
+[project.scripts]
+joint-vllm = "inference_plugins_vllm.serve:main"
+frida-joint-serve = "inference_plugins_vllm.serve:main"

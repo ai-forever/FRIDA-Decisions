@@ -1,0 +1,122 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["**/tests/**"]
+force-exclude = true
+
+[tool.ruff.lint]
+select = [
+    "F",  # pyflakes rules,
+    "I",  # sorting for imports
+    "E",  # formatting for docs
+    "W",  # pycodestyle warnings
+    "D",  # formatting for docs
+    "UP", # upgrade to latest syntax if possible
+    "FA", # Future annotations
+    "C4", # cleaner comprehensions
+    "NPY", # numpy
+    "N",       # PEP8 naming convention
+    "RUF009",  # function-call-in-dataclass-default-argument
+    "RUF008",  # mutable-dataclass-default
+    "RUF013",  # implicit-optional
+    "RUF012",  # mutable-class-default
+    "RUF015",  # unnecessary-iterable-allocation-for-first-element
+    "RUF016",  # invalid-index-type
+    "RUF017",  # quadratic-list-summation
+    "RUF018",  # assignment-in-assert
+    "RUF019",  # unnecessary-key-check
+    "RUF020",  # never-union
+    "RUF021",  # parenthesize-chained-operators
+    "RUF022",  # unsorted-dunder-all
+    "RUF024",  # mutable-fromkeys-value
+    "RUF026",  # default-factory-kwarg
+    "RUF033",  # post-init-default
+    "RUF034",  # useless-if-else
+    "RUF041",  # unnecessary-nested-literal
+    "RUF040",  # invalid-assert-message-literal-argument
+    "RUF046",  # unnecessary-cast-to-int
+    "RUF051",  # if-key-in-dict-del
+    "RUF100",  # unused-noqa
+    "RUF101",  # redirected-noqa
+    "RUF200",  # invalid-pyproject-toml
+    "PTH",     # use pathlib
+    "TID",     # tidy-imports
+    "D",       # pydocstyle
+    "PGH",     # pygrep-hooks Use specific rule codes when ignoring type issues
+    "LOG",     # logging
+    "TC",      # type-checking
+    "T20",     # don't allow print
+    "PL",      # pylint
+    "S",       # flake8-bandit
+    "FAST",       # fastapi
+    "ICN",     # import conventions, e.g. `import numpy as np`
+    "PIE",     # misc. lints, e.g. unnecessary `pass`
+    "PD",      # pandas-vet
+    "DTZ",     # require timezone-aware datetimes
+    "SLOT",    # __slots__ on str/tuple/namedtuple subclasses
+    "RSE",     # no unnecessary parens on raised exceptions
+    "YTT",     # correct sys.version checks
+    "EXE",     # shebang/executable-bit consistency
+    "INT",     # gettext f-string misuse
+    "ASYNC",   # blocking calls in async functions
+    "ISC",     # implicit string concatenation
+    "B",       # flake8-bugbear
+    "PT",      # flake8-pytest-style
+    "A",       # flake8-builtins, don't shadow builtins
+    "RET",     # flake8-return
+    "SIM",     # flake8-simplify
+    "ANN",     # flake8-annotations
+]
+
+ignore = [
+    "E501",   # line too long
+    "D100",     # Missing docstring in public module
+    "D105",     # Missing docstring in magic method
+    "D104",     # Missing docstring in public package
+    "D107",     # Missing docstring in __init__
+    "D415",     # First line should end with a period
+    "C408",     # don't use unecc. collection call, e.g. dict over {}
+    "PLC0415",   # import outside of top-level
+    "PLR0912",  # too many branches
+    "PLR0915",  # too many statements
+    "PLW0717",  # too-many-statements-in-try-clause
+    "RET504",   # unnecessary-assign; named intermediate results often aid readability
+    "SIM108",   # ternary over if/else is a style preference, and displaces inline comments
+]
+future-annotations = true  # For TC rules
+typing-modules = ["typing_extensions", "collections.abc"]
+preview = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-annotations]
+mypy-init-return = true
+suppress-none-returning = true
+# ANN003 requires `**kwargs` to be annotated; ANN401 rejects `Any`. `**kwargs` here is a
+# pass-through for arbitrary model/task options, so `Any` is the only correct annotation.
+allow-star-arg-any = true
+
+[tool.ruff.lint.flake8-type-checking]
+strict = true
+
+[tool.ruff.lint.pylint]
+max-args = 9
+
+[tool.mypy]
+python_version = "3.11"
+# Glob integrations present in the checkout; optional/untracked packages do not
+# make a clean temporary worktree's type check fail with a missing directory.
+files = ["core/src", "*-integration/src", "examples"]
+mypy_path = [
+    "core/src",
+    "vllm-integration/src",
+    "sglang-integration/src",
+    "sentence-transformers-integration/src",
+]
+explicit_package_bases = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+# Integrations run in independent environments; optional engines may be absent.
+ignore_missing_imports = true
+follow_imports = "silent"

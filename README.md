@@ -1,4 +1,13 @@
-# FRIDA-Decisions
+# FRIDA
+
+FRIDA объединяет модели для поиска и принятия решений.
+
+| Проект | Что делает |
+| --- | --- |
+| [FRIDA-Decisions](#frida-decisions) | Отвечает на структурированные вопросы по тексту и возвращает вероятности вариантов. |
+| [FRIDA-Embeddings](embeddings/) | Строит dense- и токенные векторы для поиска по текстам и изображениям. |
+
+## FRIDA-Decisions
 
 [![Habr article](https://img.shields.io/badge/Habr-article%20(RU)-65A3BE?logo=habr&logoColor=white)](https://habr.com/ru/companies/sberbank/articles/1092056/) [![Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-FRIDA--Decisions-FFD21E)](https://huggingface.co/ai-forever/FRIDA-Decisions) [![Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Demo-Spaces-FFD21E)](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions) [![Benchmark](https://img.shields.io/badge/%F0%9F%A4%97%20Benchmark-razvilka-FFD21E)](https://huggingface.co/datasets/artemsnegirev/razvilka) [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) [![Version](https://img.shields.io/github/v/tag/ai-forever/FRIDA-Decisions?label=version&color=blue)](https://github.com/ai-forever/FRIDA-Decisions/tags) [![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](pyproject.toml) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 

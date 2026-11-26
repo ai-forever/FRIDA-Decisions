@@ -1,0 +1,25 @@
+{
+    "transformer_task": "feature-extraction",
+    "modality_config": {
+        "text": {
+            "method": "forward",
+            "method_output_name": "last_hidden_state"
+        },
+        "image": {
+            "method": "forward",
+            "method_output_name": "last_hidden_state"
+        },
+        "message": {
+            "method": "forward",
+            "method_output_name": "last_hidden_state",
+            "format": "structured"
+        }
+    },
+    "module_output_name": "token_embeddings",
+    "processing_kwargs": {
+        "chat_template": {
+            "add_generation_prompt": false,
+            "restore_suffix": false
+        }
+    }
+}

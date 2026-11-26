@@ -1,0 +1,8 @@
+{
+    "in_features": 2048,
+    "out_features": 128,
+    "bias": false,
+    "activation_function": "torch.nn.modules.linear.Identity",
+    "module_input_name": "token_embeddings",
+    "module_output_name": "multivector_embeddings"
+}
