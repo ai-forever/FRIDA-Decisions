@@ -56,6 +56,19 @@ normalized by their own modules. Load this joint revision as
 `SentenceTransformer`; converting it to `MultiVectorEncoder` can remove dense
 pooling. No MaxSim scoring mask is silently added.
 
+For batched joint inference with this package installed:
+
+```python
+from inference_plugins_sentence_transformers.encode import encode_joint
+
+items = encode_joint(model, ["Document one.", "Document two."], role="document", batch_size=32)
+dense, tokens = items[0]["dense"], items[0]["multivector"]
+```
+
+The helper runs both heads in one forward pass per batch and returns CPU tensors with padding removed.
+It extracts only the embedding tensors, so scalar preprocessing metadata in Sentence Transformers 6.3
+can be shared across the whole batch.
+
 The default exported text limit is **4096 tokens**. Both tokenizer `max_length`
 and `model_max_length` are saved with that value. ST derives its limit from the
 saved tokenizer; engine context limits can be set independently for serving.

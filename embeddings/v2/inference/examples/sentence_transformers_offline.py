@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
-
 from _common import (  # noqa: PLC2701 - Shared helper for the sibling example scripts.
     arguments,
     display,
 )
-
-if TYPE_CHECKING:
-    from torch import Tensor
+from inference_plugins_sentence_transformers.encode import encode_joint
 
 
 def main() -> None:
@@ -19,17 +15,11 @@ def main() -> None:
     from sentence_transformers import SentenceTransformer
 
     model = SentenceTransformer(args.model)
-    encode = model.encode_query if args.role == "query" else model.encode_document
-    features = cast("list[dict[str, Tensor]]", encode(args.texts, output_value=None))
+    items = encode_joint(model, args.texts, role=args.role)
     display(
         [
-            {
-                "dense": item["sentence_embedding"].tolist(),
-                "multivector": item["multivector_embeddings"][
-                    item["attention_mask"].bool()
-                ].tolist(),
-            }
-            for item in features
+            {"dense": item["dense"].tolist(), "multivector": item["multivector"].tolist()}
+            for item in items
         ]
     )
 
