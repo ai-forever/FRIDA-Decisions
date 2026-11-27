@@ -59,7 +59,7 @@ Worked scenarios (routing, guardrails, retrieval, tool choice, and others) are i
 - [Model architecture, packing and input limits](docs/model.md)
 - [Inference backends and the async API](docs/backends.md)
 - [Evaluation results, model export and tests](docs/evaluation.md)
-- [Razvilka benchmark](../../benchmarks/razvilka/)
+- [razvilka benchmark](../../benchmarks/razvilka/)
 
 ## License
 

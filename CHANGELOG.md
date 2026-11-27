@@ -19,4 +19,4 @@ Added the vLLM backend for serving concurrent requests on GPU. [Release tag](htt
 
 ## 2026-10-02 · FRIDA-Decisions 0.1.x
 
-The initial release included PyTorch inference, an int8 ONNX CPU backend and the Razvilka evaluation. Version 0.1.1 added float16 support for GPUs without native bfloat16. [0.1.0](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.1.0) · [0.1.1](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.1.1)
+The initial release included PyTorch inference, an int8 ONNX CPU backend and the razvilka evaluation. Version 0.1.1 added float16 support for GPUs without native bfloat16. [0.1.0](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.1.0) · [0.1.1](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.1.1)
