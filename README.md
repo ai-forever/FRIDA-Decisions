@@ -12,8 +12,8 @@
 
 | Project | Overview | Start here |
 | --- | --- | --- |
-| [**FRIDA-Embeddings**](embeddings/) | Semantic search over text. V2 adds image retrieval and can return both a dense vector and per-token vectors. | [V1 model card](https://huggingface.co/ai-forever/FRIDA) · [V2 inference guide](embeddings/v2/inference/) |
-| [**FRIDA-Decisions**](decisions/) | A ticket router, a passage reranker, or a classifier whose labels you describe in plain language. The model scores the options you give it. | [V1 quickstart](decisions/v1/#quickstart) · [Passage reranking notebook](decisions/v1/examples/rag_filtering.ipynb) |
+| [**FRIDA-Embeddings**](embeddings/) | Semantic search over text. V2 adds image retrieval and can return both a dense vector and per-token vectors. | [V1 model card](https://huggingface.co/ai-forever/FRIDA) · [V2 inference guide](embeddings/v2/inference/) · [V1 article on Habr (RU)](https://habr.com/ru/companies/sberdevices/articles/909924/) |
+| [**FRIDA-Decisions**](decisions/) | A ticket router, a passage reranker, or a classifier whose labels you describe in plain language. The model scores the options you give it. | [V1 quickstart](decisions/v1/#quickstart) · [Passage reranking notebook](decisions/v1/examples/rag_filtering.ipynb) · [V1 article on Habr (RU)](https://habr.com/ru/companies/sberbank/articles/1092056/) |
 | [**razvilka**](benchmarks/razvilka/) | Benchmark for structured decisions with 735 Russian-language examples across 15 tasks. | [Dataset](https://huggingface.co/datasets/artemsnegirev/razvilka) · [Evaluation notebook](benchmarks/razvilka/run_razvilka.ipynb) |
 
 ## News
