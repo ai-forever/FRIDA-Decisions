@@ -29,8 +29,8 @@
 
 ## News
 
-- **FRIDA V2** introduces FRIDA-Embeddings-V2-2B, FRIDA-Decisions-V2-1.8B and FRIDA-Decisions-V2-28B-A2.5B.
-- **8 October 2026** · The first [FRIDA-Decisions model](https://huggingface.co/ai-forever/FRIDA-Decisions) was announced.
-- **20 May 2025** · The original [FRIDA text embedding model](https://huggingface.co/ai-forever/FRIDA) was announced.
+- **FRIDA V2** adds FRIDA-Embeddings-V2-2B for text and image retrieval and two multimodal FRIDA-Decisions models, 1.8B and 28B-A2.5B.
+- **8 October 2026** · The first FRIDA-Decisions model introduced structured decisions over text.
+- **20 May 2025** · The original FRIDA model introduced Russian–English text embeddings for semantic search.
 
 [MIT license](LICENSE)
