@@ -23,7 +23,6 @@ def convert(
     query_prefix: str = "",
     document_prefix: str = "",
     local_files_only: bool = False,
-    pool_at_eos: bool = False,
 ) -> Path:
     """Merge the backbone, construct native ST modules, and save the complete model."""
     from peft import PeftModel
@@ -74,7 +73,7 @@ def convert(
             "model_max_length": max_length,
         },
         processing_kwargs={
-            "chat_template": {"add_generation_prompt": False, "restore_suffix": pool_at_eos}
+            "chat_template": {"add_generation_prompt": True, "restore_suffix": True}
         },
         modality_config={
             "text": {"method": "forward", "method_output_name": "last_hidden_state"},
@@ -87,18 +86,6 @@ def convert(
         },
         module_output_name="token_embeddings",
     )
-    if pool_at_eos:
-        # ST renders text documents via the message template too. Qwen ends a
-        # turn with EOS + newline; only the newline between turns is needed here.
-        template = transformer.processor.chat_template
-        if not isinstance(template, str) or not transformer.tokenizer.eos_token:
-            raise ValueError("EOS pooling requires a single chat template and a tokenizer EOS")
-        template = (
-            "{%- set rendered -%}" + template + "{%- endset -%}"
-            "{{- rendered if add_generation_prompt else rendered.rstrip('\\n') -}}"
-        )
-        transformer.processor.chat_template = template
-        transformer.tokenizer.chat_template = template
     if adapter:
         transformer.model = PeftModel.from_pretrained(
             transformer.model, str(checkpoint), local_files_only=True
@@ -151,9 +138,6 @@ def main() -> None:
     parser.add_argument("--query-prefix", default="")
     parser.add_argument("--document-prefix", default="")
     parser.add_argument("--local-files-only", action="store_true")
-    parser.add_argument(
-        "--pool-at-eos", action="store_true", help="Preserve the final EOS for last-token pooling"
-    )
     args = parser.parse_args()
     print(  # noqa: T201 - CLI output.
         convert(
@@ -163,7 +147,6 @@ def main() -> None:
             query_prefix=args.query_prefix,
             document_prefix=args.document_prefix,
             local_files_only=args.local_files_only,
-            pool_at_eos=args.pool_at_eos,
         )
     )
 

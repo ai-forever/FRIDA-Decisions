@@ -4,8 +4,7 @@ r"""Call /pooling using native single-head tasks or combined plugin output.
         --task embed --texts 'Example query'
 
 Use --task token_embed for multivectors or --task plugin for both heads.
-All tasks use native input/messages preprocessing. Supply training prefixes or
-chat formatting explicitly when required.
+The client sends each text as a user message with the generation prompt.
 """
 
 from __future__ import annotations
@@ -23,13 +22,17 @@ def main() -> None:
     """Parse command-line arguments and run the requested operation."""
     args = arguments(__doc__, online=True, pooling_tasks=True)
     payload = {"model": args.model, "task": args.task, "encoding_format": args.encoding_format}
-    if args.data_envelope:
-        if args.task != "plugin":
-            raise ValueError("--data-envelope requires --task plugin")
-        payload["data"] = {"input": args.texts}
-    else:
-        payload["input"] = args.texts
-    response = post_json(args.url.rstrip("/") + "/pooling", payload)
+    if args.data_envelope and args.task != "plugin":
+        raise ValueError("--data-envelope requires --task plugin")
+    items = []
+    for text in args.texts:
+        chat = {
+            "messages": [{"role": "user", "content": text}],
+            "add_generation_prompt": True,
+        }
+        request = {**payload, "data": chat} if args.data_envelope else {**payload, **chat}
+        items.extend(post_json(args.url.rstrip("/") + "/pooling", request)["data"])
+    response = {"data": items}
     if args.encoding_format == "float":
         if args.task == "plugin":
             display(response["data"])

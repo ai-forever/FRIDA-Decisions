@@ -58,19 +58,20 @@ All tasks accept native `input` (text strings or token IDs) and `messages`:
 curl -sS --fail-with-body http://localhost:8000/pooling \
   -H 'Content-Type: application/json' -d '{
     "model": "joint-model", "task": "plugin",
-    "input": ["Example document", "Another document"]
+    "messages": [{"role": "user", "content": "Example document"}],
+    "add_generation_prompt": true
   }'
 ```
 
 Change `task` to `embed` or `token_embed` for one head. Text batches use native
 completion-style preprocessing. For preformatted token IDs, set
-`add_special_tokens: false`. Add any training prefixes and EOS tokens explicitly.
+`add_special_tokens: false`. Apply the checkpoint chat template with `add_generation_prompt=True` to queries and documents. Preserve the entire suffix, including the final two newline characters after `</think>`. The dense head pools the last token of the formatted input.
 
 Images use native chat content parts, including URLs or base64 data URLs:
 
 ```json
 {
-  "model": "joint-model", "task": "plugin", "add_generation_prompt": false,
+  "model": "joint-model", "task": "plugin", "add_generation_prompt": true,
   "messages": [{"role": "user", "content": [
     {"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}},
     {"type": "text", "text": "Describe this page"}
@@ -103,7 +104,10 @@ fields take precedence over fields inside `data`.
 curl -sS --fail-with-body http://localhost:8000/pooling \
   -H 'Content-Type: application/json' -d '{
     "model": "joint-model", "task": "plugin", "encoding_format": "base64",
-    "data": {"input": ["Example document", "Another document"]}
+    "data": {
+      "messages": [{"role": "user", "content": "Example document"}],
+      "add_generation_prompt": true
+    }
   }'
 ```
 
@@ -117,7 +121,7 @@ Image conversations work the same way:
       {"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}},
       {"type": "text", "text": "Describe this page"}
     ]}],
-    "add_generation_prompt": false
+    "add_generation_prompt": true
   }
 }
 ```
@@ -134,7 +138,7 @@ result = llm.encode(
     {
         "data": {
             "input": [
-                "Example document",
+                {"prompt": formatted_text_prompt},
                 {"prompt": formatted_prompt, "multi_modal_data": {"image": pil_image}},
             ]
         }
@@ -174,8 +178,14 @@ llm = LLM(
     pooler_config=PoolerConfig(task="token_embed"),
     enable_prefix_caching=False,
 )
-heads = encode_joint(llm, ["Example document", {"prompt_token_ids": [1, 2, 3]}])
-tokens = llm.encode(["Example document"], pooling_task="token_embed")
+tokenizer = llm.get_tokenizer()
+prompt = tokenizer.apply_chat_template(
+    [{"role": "user", "content": "Example document"}],
+    tokenize=False,
+    add_generation_prompt=True,
+)
+heads = encode_joint(llm, [prompt])
+tokens = llm.encode([prompt], pooling_task="token_embed")
 ```
 
 For dense-only inference, initialize with `PoolerConfig(task="embed")` and call
@@ -208,7 +218,7 @@ formatted = llm.get_tokenizer().apply_chat_template(
         }
     ],
     tokenize=False,
-    add_generation_prompt=False,
+    add_generation_prompt=True,
 )
 result = encode_joint(llm, [{"prompt": formatted, "multi_modal_data": {"image": image}}])
 ```
@@ -243,7 +253,9 @@ its native float-only restriction.
 ```bash
 curl -sS --fail-with-body http://localhost:8000/pooling \
   -H 'Content-Type: application/json' -d '{
-    "model": "joint-model", "task": "plugin", "input": ["Example document"],
+    "model": "joint-model", "task": "plugin",
+    "messages": [{"role": "user", "content": "Example document"}],
+    "add_generation_prompt": true,
     "encoding_format": "base64", "embed_dtype": "float32", "endianness": "little"
   }'
 ```

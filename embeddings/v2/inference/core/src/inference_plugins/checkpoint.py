@@ -112,7 +112,10 @@ def _read_pipeline(root: Path) -> JointCheckpoint:
         raise ValueError(
             "joint_embeddings accepts only version, append_eos, add_special_tokens and skip_token_ids; other settings belong in ST modules"
         )
+    chat_template = transformer.get("processing_kwargs", {}).get("chat_template", {})
     inferred = dict(
+        add_generation_prompt=chat_template.get("add_generation_prompt", False),
+        restore_suffix=chat_template.get("restore_suffix", False),
         dense_dim=head["in_features"],
         multivector_dim=head["out_features"],
         normalize_dense="sentence_embedding" in normalized,

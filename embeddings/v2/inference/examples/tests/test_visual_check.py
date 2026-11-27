@@ -79,14 +79,14 @@ def test_visual_example_offline_and_online(monkeypatch: pytest.MonkeyPatch, tmp_
     calls: list[dict[str, Any]] = []
     def post(url: str, payload: dict[str, Any]) -> dict[str, list[JointEmbedding]]:
         assert url == 'http://localhost:8000/pooling' and payload['task'] == 'plugin'
-        assert 'data' not in payload and payload['add_generation_prompt'] is False
+        assert 'data' not in payload and payload['add_generation_prompt'] is True
         assert payload['messages'][0]['role'] == 'user'
         result = outputs()[len(calls)]
         calls.append(payload)
         return {'data': [result]}
     class Tokenizer:
         def apply_chat_template(self, messages: list[dict[str, Any]], **kwargs: Any) -> str:
-            assert kwargs == {'tokenize': False, 'add_generation_prompt': False}
+            assert kwargs == {'tokenize': False, 'add_generation_prompt': True}
             return 'formatted prompt'
     class LLM:
         def __init__(self, **kwargs: Any) -> None:

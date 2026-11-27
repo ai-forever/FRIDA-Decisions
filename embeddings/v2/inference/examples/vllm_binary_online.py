@@ -32,6 +32,12 @@ def main() -> None:
         if args.encoding_format in {"bytes", "bytes_only"}
         else "application/json"
     )
+    for text in args.texts:
+        request_embedding(args, text, media_type)
+
+
+def request_embedding(args: argparse.Namespace, text: str, media_type: str) -> None:
+    """Send one chat-formatted document and print the returned shapes."""
     request = Request(  # noqa: S310 - Validated user-selected HTTP(S) inference server.
         args.url.rstrip("/") + "/pooling",
         data=json.dumps(
@@ -41,7 +47,8 @@ def main() -> None:
                 "encoding_format": args.encoding_format,
                 "embed_dtype": "float32",
                 "endianness": "little",
-                "input": args.texts,
+                "messages": [{"role": "user", "content": text}],
+                "add_generation_prompt": True,
             }
         ).encode(),
         headers={"Content-Type": "application/json", "Accept": media_type},
@@ -59,7 +66,7 @@ def main() -> None:
             print(json.dumps(json.loads(metadata), indent=2))  # noqa: T201 - Tensor layout for decoding.
         return
     result = json.loads(body)
-    if len(result["data"]) != len(args.texts):
+    if len(result["data"]) != 1:
         raise ValueError("Expected one joint embedding per input")
     for index, item in enumerate(result["data"]):
         shapes = {}

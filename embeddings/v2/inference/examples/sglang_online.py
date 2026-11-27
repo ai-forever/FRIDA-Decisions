@@ -45,8 +45,7 @@ from _common import (  # noqa: PLC2701 - Shared helper for the sibling example s
 def main() -> None:
     """Parse command-line arguments and run the requested operation."""
     args = arguments(__doc__, online=True)
-    # Use the same local checkpoint/tokenizer as the server so prefixes,
-    # truncation and optional EOS follow the checkpoint's contract.
+    # Use the server checkpoint to apply role prefixes and preserve the chat suffix.
     _, contract, tokenizer = engine_contract(args.model)
     response = post_json(
         args.url.rstrip("/") + "/encode",

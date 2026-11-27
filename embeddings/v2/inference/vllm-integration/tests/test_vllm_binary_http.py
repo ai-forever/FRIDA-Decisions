@@ -58,7 +58,7 @@ def test_multimodal_client_sends_native_messages(tmp_path, monkeypatch, task, en
         assert 'embed_task' not in payload.get('data', {})
         content = payload['data'] if data_envelope else payload
         messages = content['messages']
-        assert content['add_generation_prompt'] is False
+        assert content['add_generation_prompt'] is True
         assert messages[0]['content'][0]['image_url']['url'] == 'data:image/png;base64,cG5n'
         assert messages[0]['content'][1] == {'type': 'text', 'text': 'Describe'}
         return {'data': [{'dense': [1], 'multivector': [[1]]}] if task == 'plugin' else [{'data': [1]}]}

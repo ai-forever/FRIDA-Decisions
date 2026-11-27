@@ -133,13 +133,13 @@ def test_projection_requires_st_modules_even_with_legacy_sidecar(tmp_path):
 
 def test_contract_text_format_follows_st_message_modality(checkpoint):
     root, _, _ = checkpoint
-    (root / 'sentence_bert_config.json').write_text(json.dumps({'max_seq_length': 123, 'modality_config': {'message': {'method': 'forward'}}}))
+    (root / 'sentence_bert_config.json').write_text(json.dumps({'max_seq_length': 123, 'modality_config': {'message': {'method': 'forward'}}, 'processing_kwargs': {'chat_template': {'add_generation_prompt': True}}}))
     contract = JointCheckpoint.load(root).contract
     assert contract.use_chat_template
     class Tokenizer:
         eos_token_id = 99
         def apply_chat_template(self, conversation, **kwargs):
-            assert kwargs == {'tokenize': False, 'add_generation_prompt': False}
+            assert kwargs == {'tokenize': False, 'add_generation_prompt': True}
             return 'CHAT:' + conversation[0]['content'][0]['text']
         def __call__(self, texts, **kwargs):
             assert texts == ['CHAT:Q: search']

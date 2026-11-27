@@ -81,7 +81,7 @@ def offline_visual_inputs(tokenizer: ChatTokenizer) -> list[dict[str, Any]]:
             else:
                 content.append(part)
         formatted = tokenizer.apply_chat_template(
-            [{"role": "user", "content": content}], tokenize=False, add_generation_prompt=False
+            [{"role": "user", "content": content}], tokenize=False, add_generation_prompt=True
         )
         prompt: dict[str, Any] = {"prompt": formatted}
         if images:

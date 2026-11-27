@@ -333,7 +333,7 @@ def online(args: argparse.Namespace) -> None:
                 "model": "joint-model",
                 "task": "plugin",
                 "messages": messages,
-                "add_generation_prompt": False,
+                "add_generation_prompt": True,
             },
         )["data"][0]
         for messages in visual_inputs()

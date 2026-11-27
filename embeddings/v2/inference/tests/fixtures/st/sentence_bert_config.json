@@ -18,8 +18,8 @@
     "module_output_name": "token_embeddings",
     "processing_kwargs": {
         "chat_template": {
-            "add_generation_prompt": false,
-            "restore_suffix": false
+            "add_generation_prompt": true,
+            "restore_suffix": true
         }
     }
 }

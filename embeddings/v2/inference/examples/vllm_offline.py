@@ -21,7 +21,8 @@ def main() -> None:
     args = arguments(__doc__, pooling_tasks=True)
     if args.data_envelope and args.task != "plugin":
         raise ValueError("--data-envelope requires --task plugin")
-    root, contract, _ = engine_contract(args.model)
+    root, contract, tokenizer = engine_contract(args.model)
+    prompts = [{"prompt_token_ids": ids} for ids in contract.tokenize(tokenizer, args.texts)]
     from vllm import LLM
     from vllm.config import PoolerConfig
 
@@ -38,14 +39,14 @@ def main() -> None:
         enforce_eager=True,
     )
     if args.data_envelope:
-        outputs = llm.encode({"data": {"input": args.texts}}, pooling_task="plugin")
+        outputs = llm.encode({"data": {"input": prompts}}, pooling_task="plugin")
         display(outputs[0].outputs)
     elif args.task == "plugin":
         from inference_plugins_vllm.offline import encode_joint
 
-        display(encode_joint(llm, args.texts))
+        display(encode_joint(llm, prompts))
     else:
-        outputs = llm.encode(args.texts, pooling_task=args.task)
+        outputs = llm.encode(prompts, pooling_task=args.task)
         field = "dense" if args.task == "embed" else "multivector"
         display([{field: item.outputs.data.tolist()} for item in outputs])
 

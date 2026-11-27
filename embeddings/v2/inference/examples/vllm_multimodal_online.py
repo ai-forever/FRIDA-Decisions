@@ -52,7 +52,7 @@ def main() -> None:
     ]
     payload = {"model": args.model, "task": args.task, "encoding_format": args.encoding_format}
     if args.data_envelope:
-        payload["data"] = {"messages": messages, "add_generation_prompt": False}
+        payload["data"] = {"messages": messages, "add_generation_prompt": True}
     else:
         payload["messages"] = messages
         payload["add_generation_prompt"] = False

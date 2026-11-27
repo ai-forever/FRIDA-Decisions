@@ -28,7 +28,7 @@ Use Sentence Transformers 6.3+:
 ```bash
 uv sync --project sentence-transformers-integration
 uv run --project sentence-transformers-integration joint-st-convert \
-  /path/to/training-checkpoint /path/to/st-model --max-length 4096 --pool-at-eos
+  /path/to/training-checkpoint /path/to/st-model --max-length 4096
 ```
 
 Output is never overwritten. Base weights must be cached or downloadable;

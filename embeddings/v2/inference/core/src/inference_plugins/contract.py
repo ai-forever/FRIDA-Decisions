@@ -27,6 +27,8 @@ class Contract:
     append_eos: bool = False
     add_special_tokens: bool = False
     use_chat_template: bool = False
+    add_generation_prompt: bool = False
+    restore_suffix: bool = False
     max_length: int = 512
     skip_token_ids: tuple[int, ...] = ()
 
@@ -74,20 +76,31 @@ class Contract:
             raise ValueError("max_length must leave room for content and EOS")
         prepared = [prefix + text for text in texts]
         if self.use_chat_template:
-            prepared = [
-                cast("ChatTokenizer", tokenizer).apply_chat_template(
-                    [{"role": "user", "content": [{"type": "text", "text": text}]}],
-                    tokenize=False,
-                    add_generation_prompt=False,
-                )
-                for text in prepared
-            ]
+            prepared = [self._render_text(cast("ChatTokenizer", tokenizer), text) for text in prepared]
         ids = tokenizer(
             prepared,
             add_special_tokens=self.add_special_tokens,
             truncation=True,
             max_length=budget,
         )["input_ids"]
+        if self.use_chat_template and self.restore_suffix and any(len(row) == budget for row in ids):
+            rendered = [
+                self._render_text(cast("ChatTokenizer", tokenizer), filler)
+                for filler in ("0", "1 2 3 4")
+            ]
+            first, second = tokenizer(
+                rendered, add_special_tokens=self.add_special_tokens, truncation=False
+            )["input_ids"]
+            suffix = []
+            for a, b in zip(reversed(first), reversed(second), strict=False):
+                if a != b:
+                    break
+                suffix.append(a)
+            tail = suffix[:budget][::-1]
+            if tail:
+                for row in ids:
+                    if len(row) == budget:
+                        row[-len(tail):] = tail
         if self.append_eos:
             if tokenizer.eos_token_id is None:
                 raise ValueError("EOS requested but tokenizer has no EOS")
@@ -95,3 +108,10 @@ class Contract:
         if any(not row for row in ids):
             raise ValueError("Empty token sequences are unsupported")
         return ids
+
+    def _render_text(self, tokenizer: ChatTokenizer, text: str) -> str:
+        return tokenizer.apply_chat_template(
+            [{"role": "user", "content": [{"type": "text", "text": text}]}],
+            tokenize=False,
+            add_generation_prompt=self.add_generation_prompt,
+        )

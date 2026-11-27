@@ -1,6 +1,6 @@
 # FRIDA-Embeddings-V2-2B inference
 
-For each input, the model can return a 2048-dimensional dense embedding, a 128-dimensional vector per token, or both in one forward pass. All three backends read the same Sentence Transformers checkpoint. Run the commands below from `embeddings/v2/inference`.
+For each input, the model can return a 2048-dimensional dense embedding, a 128-dimensional vector per token, or both in one forward pass. All three backends read the same Sentence Transformers checkpoint. Use `add_generation_prompt=True` for queries and documents and keep the complete chat suffix, including the newline characters after `</think>`. The dense vector comes from the final token. Run the commands below from `embeddings/v2/inference`.
 
 | Package | Purpose |
 | --- | --- |

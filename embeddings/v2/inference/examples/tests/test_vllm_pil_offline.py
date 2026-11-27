@@ -33,7 +33,7 @@ def test_pil_example_uses_native_images_for_each_task(
             return {'input_ids': [[1]] * len(texts)}
         def apply_chat_template(self, conversation: list[dict[str, Any]], **kwargs: Any) -> str:
             assert conversation[0]['content'][0] == {'type': 'image'}
-            assert kwargs == {'tokenize': False, 'add_generation_prompt': False}
+            assert kwargs == {'tokenize': False, 'add_generation_prompt': True}
             return '<image>'
     def check_prompts(prompts: list[dict[str, Any]]) -> None:
         assert isinstance(prompts, list) and len(prompts) == 2

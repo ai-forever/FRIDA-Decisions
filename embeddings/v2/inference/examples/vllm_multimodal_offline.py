@@ -44,7 +44,7 @@ def main() -> None:
         if caption:
             content.append({"type": "text", "text": caption})
         formatted = tokenizer.apply_chat_template(
-            [{"role": "user", "content": content}], tokenize=False, add_generation_prompt=False
+            [{"role": "user", "content": content}], tokenize=False, add_generation_prompt=True
         )
         prompts.append({"prompt": formatted, "multi_modal_data": {"image": image}})
     llm = LLM(
