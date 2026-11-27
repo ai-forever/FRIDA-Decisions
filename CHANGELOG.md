@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The private V2 release adds text and image retrieval with [FRIDA-Embeddings V2](embeddings/v2/inference/) and structured decisions over text and images with [FRIDA-Decisions V2](decisions/v2/inference/). Decisions 0.5.0 includes the V1 SDK and both generations of the vLLM plugin.
 - The repository now groups code and documentation by project. The [FRIDA-Decisions V1 package](decisions/v1/) lives in `decisions/v1/`. The Python import is still `frida_decisions`.
 - The [FRIDA-Embeddings guide](embeddings/) covers the original FRIDA encoder and the V2 inference integrations.
 
