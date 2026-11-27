@@ -52,7 +52,7 @@ def main() -> None:
         runner="pooling",
         hf_overrides={"architectures": ["Qwen35JointEmbedding"]},
         pooler_config=PoolerConfig(task="token_embed" if args.task == "plugin" else args.task),
-        io_processor_plugin="joint_embeddings" if args.data_envelope else None,
+        io_processor_plugin="frida_embeddings_v2" if args.data_envelope else None,
         enable_prefix_caching=False,
         enforce_eager=True,
         max_model_len=args.max_model_len or contract.max_length,

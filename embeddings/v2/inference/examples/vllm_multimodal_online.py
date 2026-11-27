@@ -4,7 +4,7 @@ r"""Encode an image plus text through our native Qwen3.5 multimodal backbone.
         --model joint-model --image page.png --text 'Describe this page' --task plugin
 
 task selects embed, token_embed, or plugin (both heads).
-Serve with VLLM_PLUGINS=joint_embeddings to enable the pooling endpoint. Choose a max-model-len large enough for the image patches.
+Serve with VLLM_PLUGINS=frida_embeddings_v2 to enable the pooling endpoint. Choose a max-model-len large enough for the image patches.
 """
 
 from __future__ import annotations

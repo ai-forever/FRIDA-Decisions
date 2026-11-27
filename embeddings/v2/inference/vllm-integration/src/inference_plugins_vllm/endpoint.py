@@ -110,7 +110,7 @@ async def joint_pooling(request: PoolingRequest, raw_request: Request) -> Respon
 class JointPoolingEndpoint:
     """Install the joint handler for this architecture on the opted-in app only."""
 
-    name = "joint_embeddings"
+    name = "frida_embeddings_v2"
     required_tasks = ("embed", "token_embed")
 
     @staticmethod

@@ -38,7 +38,7 @@ PY
 "$PYTHON" -c 'import setuptools, torch, safetensors, vllm; print("vLLM", vllm.__version__, "torch", torch.__version__)'
 "$PYTHON" -m pip install --no-deps --no-build-isolation \
     -e "$REPO_ROOT/core" -e "$REPO_ROOT/vllm-integration"
-export VLLM_PLUGINS="${VLLM_PLUGINS:+${VLLM_PLUGINS},}joint_embeddings"
+export VLLM_PLUGINS="${VLLM_PLUGINS:+${VLLM_PLUGINS},}frida_embeddings_v2"
 
 "$PYTHON" "$REPO_ROOT/examples/vllm_container_smoke.py" check
 for arg in "$@"; do

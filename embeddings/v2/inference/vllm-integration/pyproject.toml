@@ -19,13 +19,13 @@ vllm = { git = "https://github.com/vllm-project/vllm.git", rev = "b7186d137addf2
 joint-inference-core = { path = "../core", editable = true }
 
 [project.entry-points."vllm.general_plugins"]
-joint_embeddings = "inference_plugins_vllm:register_vllm"
+frida_embeddings_v2 = "inference_plugins_vllm:register_vllm"
 
 [project.entry-points."vllm.io_processor_plugins"]
-joint_embeddings = "inference_plugins_vllm:register_io_processor"
+frida_embeddings_v2 = "inference_plugins_vllm:register_io_processor"
 
 [project.entry-points."vllm.endpoint_plugins"]
-joint_embeddings = "inference_plugins_vllm.endpoint:JointPoolingEndpoint"
+frida_embeddings_v2 = "inference_plugins_vllm.endpoint:JointPoolingEndpoint"
 
 [project.scripts]
 joint-vllm = "inference_plugins_vllm.serve:main"

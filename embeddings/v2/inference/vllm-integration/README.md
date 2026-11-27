@@ -8,7 +8,7 @@ All tasks use native vLLM inputs. Select the output on `/pooling`:
 | `token_embed` | Multivector matrix in `response["data"][i]["data"]` |
 | `plugin` | Both named `dense` and `multivector` fields in `response["data"][i]` |
 
-The `joint_embeddings` plugin supports FRIDA-Embeddings-V2-2B. It registers the Qwen3.5-based `Qwen35JointEmbedding` architecture and loads the trained token projection from the checkpoint.
+The `frida_embeddings_v2` plugin supports FRIDA-Embeddings-V2-2B. It registers the Qwen3.5-based `Qwen35JointEmbedding` architecture and loads the trained token projection from the checkpoint.
 
 The endpoint plugin uses vLLM’s standard pooling route and
 native chat/completion rendering. It selects the requested head on each HTTP
@@ -19,7 +19,7 @@ request. Prefixes and chat formatting remain caller-controlled.
 ```bash
 python -m pip install --no-deps --no-build-isolation -e ./core -e ./vllm-integration
 
-VLLM_PLUGINS=joint_embeddings vllm serve ai-forever/FRIDA-Embeddings-V2-2B \
+VLLM_PLUGINS=frida_embeddings_v2 vllm serve ai-forever/FRIDA-Embeddings-V2-2B \
   --runner pooling --served-model-name joint-model \
   --hf-overrides '{"architectures":["Qwen35JointEmbedding"]}' \
   --no-enable-prefix-caching \
@@ -28,7 +28,7 @@ VLLM_PLUGINS=joint_embeddings vllm serve ai-forever/FRIDA-Embeddings-V2-2B \
 
 Use a vLLM build with the `vllm.endpoint_plugins` interface and route replacement support
 (the local checkout used for verification is `b7186d137a`).
-Include `joint_embeddings` in the server’s `VLLM_PLUGINS` allowlist to load the
+Include `frida_embeddings_v2` in the server’s `VLLM_PLUGINS` allowlist to load the
 model and HTTP endpoint. `joint-vllm` and `frida-joint-serve` invoke the stock CLI.
 Use the Hub ID of the joint Sentence Transformers checkpoint or its local directory.
 `--revision` selects the model revision for both the backbone and the projection.
@@ -47,7 +47,7 @@ max-model-len: 32768
 ```
 
 ```bash
-VLLM_PLUGINS=joint_embeddings vllm serve ai-forever/FRIDA-Embeddings-V2-2B --config serve.yaml
+VLLM_PLUGINS=frida_embeddings_v2 vllm serve ai-forever/FRIDA-Embeddings-V2-2B --config serve.yaml
 ```
 
 ## HTTP inputs
@@ -126,7 +126,7 @@ The output is identical to direct native input, including all encoding formats.
 `plugin` always returns both heads; `embed_task` and `role` are rejected.
 
 For the optional stock offline envelope, construct the LLM with
-`io_processor_plugin="joint_embeddings"`. Its `data.input` contains native prompts (text, token IDs, prepared prompt
+`io_processor_plugin="frida_embeddings_v2"`. Its `data.input` contains native prompts (text, token IDs, prepared prompt
 dictionaries, or batches). PIL images stay inside native `multi_modal_data`:
 
 ```python

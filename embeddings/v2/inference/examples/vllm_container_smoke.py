@@ -54,10 +54,12 @@ def check() -> None:
 
     for group in ("vllm.general_plugins", "vllm.io_processor_plugins", "vllm.endpoint_plugins"):
         entries = [
-            e for e in importlib.metadata.entry_points(group=group) if e.name == "joint_embeddings"
+            e
+            for e in importlib.metadata.entry_points(group=group)
+            if e.name == "frida_embeddings_v2"
         ]
         if len(entries) != 1:
-            raise RuntimeError(f"Expected one joint_embeddings entry in {group}, got {entries}")
+            raise RuntimeError(f"Expected one frida_embeddings_v2 entry in {group}, got {entries}")
         if group == "vllm.endpoint_plugins":
             endpoint = entries[0].load()()
             if endpoint.required_tasks != ("embed", "token_embed"):
