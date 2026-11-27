@@ -10,20 +10,22 @@
 
 ## Models
 
-- [**FRIDA**](https://huggingface.co/ai-forever/FRIDA) (2025) — the original Russian–English text embedding model for semantic search. [Habr article (RU)](https://habr.com/ru/companies/sberdevices/articles/909924/)
-- [**FRIDA-Decisions**](https://huggingface.co/ai-forever/FRIDA-Decisions) (October 2026) — scores choices, ratings, yes/no questions and rankings over text. [Quickstart](decisions/v1/#quickstart) · [Habr article (RU)](https://habr.com/ru/companies/sberbank/articles/1092056/)
-
 ### V2 (in preparation)
 
 - [**FRIDA-Embeddings-V2-2B**](embeddings/v2/inference/) — text and image retrieval with dense and token-level embeddings.
 - [**FRIDA-Decisions-V2-1.8B**](decisions/) — a compact model for structured decisions over text and images.
 - [**FRIDA-Decisions-V2-28B-A2.5B**](decisions/) — a mixture-of-experts model for the same tasks, with 2.5B active parameters. An FP8 variant is also in preparation.
 
+### V1
+
+- [**FRIDA-Decisions**](https://huggingface.co/ai-forever/FRIDA-Decisions) (October 2026) — scores choices, ratings, yes/no questions and rankings over text. [Quickstart](decisions/v1/#quickstart) · [Habr article (RU)](https://habr.com/ru/companies/sberbank/articles/1092056/)
+- [**FRIDA**](https://huggingface.co/ai-forever/FRIDA) (2025) — the original Russian–English text embedding model for semantic search. [Habr article (RU)](https://habr.com/ru/companies/sberdevices/articles/909924/)
+
 ## Benchmarks
 
+- [**razvilka**](benchmarks/razvilka/) was released alongside the original FRIDA-Decisions in October 2026. It evaluates structured decisions on 735 Russian-language examples across 15 tasks. [Dataset](https://huggingface.co/datasets/artemsnegirev/razvilka) · [Evaluation notebook](benchmarks/razvilka/run_razvilka.ipynb)
 - [**ruMTEB**](https://huggingface.co/collections/ai-forever/ru-mteb) evaluates Russian-language text embeddings across seven task categories, including retrieval, classification and clustering.
   Snegirev et al. (NAACL 2025), [*The Russian-focused embedders’ exploration: ruMTEB benchmark and Russian embedding model design*](https://aclanthology.org/2025.naacl-long.12/). [BibTeX](https://aclanthology.org/2025.naacl-long.12.bib)
-- [**razvilka**](benchmarks/razvilka/) was released alongside the original FRIDA-Decisions in October 2026. It evaluates structured decisions on 735 Russian-language examples across 15 tasks. [Dataset](https://huggingface.co/datasets/artemsnegirev/razvilka) · [Evaluation notebook](benchmarks/razvilka/run_razvilka.ipynb)
 
 ## News
 
