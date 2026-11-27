@@ -4,7 +4,7 @@
   <img src="assets/frida-mascot.jpg" width="520" alt="The FRIDA mascot holds up a bar chart and a check mark.">
 </p>
 
-A customer writes, *“I paid once. Why are there two charges on my card?”* **FRIDA-Embeddings** can find the help articles about duplicate payments. **FRIDA-Decisions** can rank those passages by how well they answer the question, or route the message straight to billing.
+**FRIDA-Embeddings** encodes queries and documents for semantic search. **FRIDA-Decisions** scores candidate answers for classification, rating and reranking.
 
 [Try the Decisions demo](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions) · [Explore the original FRIDA encoder](https://huggingface.co/ai-forever/FRIDA) · [Browse the cookbook](decisions/v1/examples/)
 
