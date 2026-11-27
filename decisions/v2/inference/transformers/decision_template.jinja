@@ -1,0 +1,18 @@
+
+{%- macro r(x) %}{{ x if x is string else x|tojson(separators=(",", ":"), sort_keys=true) }}{% endmacro -%}
+{%- set defaults = {"true": "The answer to the question is yes.", "false": "The answer to the question is no."} -%}
+{{- "<|im_start|>" ~ r(state) ~ "<|im_end|>" ~ "<|mark|>" -}}
+{%- for q in questions -%}
+    {{- r(q.instructions) ~ "<|im_end|>" ~ "<|mark|>" -}}
+    {%- for o in q.options -%}
+        {%- set d = q.descriptions[loop.index0] -%}
+        {%- if q.type == "choice" -%}
+            {{- o if d is none else o ~ ": " ~ r(d) -}}
+        {%- elif q.type == "score" -%}
+            {{- r(d) -}}
+        {%- else -%}
+            {{- defaults[o] if d is none else r(d) -}}
+        {%- endif -%}
+        {{- "<|im_end|>" ~ "<|mark|>" -}}
+    {%- endfor -%}
+{%- endfor -%}

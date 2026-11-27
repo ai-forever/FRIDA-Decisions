@@ -1,0 +1,10 @@
+{
+  "labels": {},
+  "temperature": {},
+  "noul_options": [
+    "true",
+    "false"
+  ],
+  "sanitize_control_tokens": true,
+  "adapter": null
+}

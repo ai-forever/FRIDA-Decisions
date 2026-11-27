@@ -1,8 +1,8 @@
-"""Keep repository-root installs compatible with the original Decisions package."""
+"""Build the Decisions distribution with both V1 and V2 runtimes."""
 import os
 from pathlib import Path
 
 from setuptools import setup
 
-os.chdir(Path(__file__).resolve().parent / "decisions" / "v1")
+os.chdir(Path(__file__).resolve().parent / "decisions" / "v2" / "inference" / "serving")
 setup()

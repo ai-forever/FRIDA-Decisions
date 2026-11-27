@@ -10,11 +10,11 @@
 
 ## Models
 
-### V2 (in preparation)
+### V2 (private release)
 
 - [**FRIDA-Embeddings-V2-2B**](embeddings/v2/inference/) — text and image retrieval with dense and token-level embeddings.
-- [**FRIDA-Decisions-V2-1.8B**](decisions/) — a compact model for structured decisions over text and images.
-- [**FRIDA-Decisions-V2-28B-A2.5B**](decisions/) — a mixture-of-experts model for the same tasks, with 2.5B active parameters. An FP8 variant is also in preparation.
+- [**FRIDA-Decisions-V2-1.8B**](https://huggingface.co/ai-forever/FRIDA-Decisions-V2-1.8B) — a compact model for structured decisions over text and images.
+- [**FRIDA-Decisions-V2-28B-A2.5B**](https://huggingface.co/ai-forever/FRIDA-Decisions-V2-28B-A2.5B) — a mixture-of-experts model for the same tasks, with 2.5B active parameters. [Inference guide](decisions/v2/inference/)
 
 ### V1
 

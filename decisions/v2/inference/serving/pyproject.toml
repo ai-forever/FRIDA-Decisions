@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "frida-decisions"
+version = "0.5.0"
+description = "Structured decisions over text (choice, score, yes/no, ranking) with one packed encoder pass."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "УЭСМО, SberAI" }]
+dependencies = [
+    "numpy>=1.24",
+    "tokenizers>=0.15",
+    "safetensors>=0.4",
+    "huggingface_hub>=0.20",
+]
+
+[project.optional-dependencies]
+v2 = ["vllm==0.32.0", "transformers==5.19.0", "fla-core==0.6.0", "flash-linear-attention==0.6.0", "accelerate>=1.15"]
+torch = ["torch>=2.1", "transformers>=4.40"]
+mlx = ["mlx>=0.32.3"]
+onnx = ["onnxruntime>=1.17"]
+# Tested with vLLM 0.29.0 only: the backend uses vLLM's attention-backend and
+# pooler internals, which change between releases.
+vllm = ["vllm>=0.29.0"]
+export = ["torch>=2.1", "transformers>=4.40", "onnx>=1.15", "onnxruntime>=1.17"]
+dev = ["pytest>=7", "torch>=2.1", "transformers>=4.40", "onnx>=1.15", "onnxruntime>=1.17"]
+
+[project.urls]
+Repository = "https://github.com/ai-forever/FRIDA"
+Model = "https://huggingface.co/ai-forever/FRIDA-Decisions"
+
+# vLLM loads these when it starts; without vLLM installed they are never imported.
+[project.entry-points."vllm.general_plugins"]
+frida_decisions = "frida_decisions.vllm_backend:register"
+frida_decisions_v2 = "frida_decisions.v2.model.vllm_hybrid:register"
+
+[project.entry-points."vllm.io_processor_plugins"]
+frida_decisions = "frida_decisions.vllm_backend:io_processor"
+frida_decisions_v2 = "frida_decisions.v2.model.vllm_hybrid:io_processor"
+
+[tool.setuptools.packages.find]
+include = ["frida_decisions*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
