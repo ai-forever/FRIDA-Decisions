@@ -21,4 +21,4 @@
 - **In preparation** · FRIDA-Embeddings V2 for text and image retrieval, and FRIDA-Decisions V2 in two sizes (1.8B and 28B-A2.5B).
 - **6 October 2026** · FRIDA-Decisions 0.4.0 brought local inference to Apple Silicon with [MLX](decisions/v1/docs/backends.md#mlx-on-apple-silicon).
 
-[Full changelog](CHANGELOG.md) · [MIT license](LICENSE)
+[MIT license](LICENSE)
