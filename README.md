@@ -10,9 +10,9 @@
 
 ## Models
 
-### V2 (private release)
+### V2
 
-- [**FRIDA-Embeddings-V2-2B**](embeddings/v2/inference/) — text and image retrieval with dense and token-level embeddings.
+- [**FRIDA-Embeddings-V2-2B**](https://huggingface.co/ai-forever/FRIDA-Embeddings-V2-2B) — text and image retrieval with dense and token-level embeddings. [Inference guide](embeddings/v2/inference/)
 - [**FRIDA-Decisions-V2-1.8B**](https://huggingface.co/ai-forever/FRIDA-Decisions-V2-1.8B) — a compact model for structured decisions over text and images.
 - [**FRIDA-Decisions-V2-28B-A2.5B**](https://huggingface.co/ai-forever/FRIDA-Decisions-V2-28B-A2.5B) — a mixture-of-experts model for the same tasks, with 2.5B active parameters. [Inference guide](decisions/v2/inference/)
 
@@ -29,6 +29,7 @@
 
 ## News
 
+- **FRIDA V2** adds multimodal retrieval with Embeddings 2B and structured decisions over text and images with Decisions 1.8B and 28B-A2.5B. The Decisions package is now at version 0.5.0.
 - **6 October 2026** · FRIDA-Decisions 0.4.0 brought local inference to Apple Silicon with [MLX](decisions/v1/docs/backends.md#mlx-on-apple-silicon).
 
 [MIT license](LICENSE)
