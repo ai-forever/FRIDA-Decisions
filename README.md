@@ -6,19 +6,25 @@
 
 **FRIDA-Embeddings** encodes queries and documents for semantic search. **FRIDA-Decisions** scores candidate answers for classification, rating and reranking.
 
-[Try the Decisions demo](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions) · [Explore the original FRIDA encoder](https://huggingface.co/ai-forever/FRIDA) · [Browse the cookbook](decisions/v1/examples/)
+[Sber AI R&D showcase](https://mlrnd.ru/) · [Decisions demo](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions) · [Cookbook](decisions/v1/examples/)
 
-## Projects
+## Models
 
-| Project | Overview | Start here |
-| --- | --- | --- |
-| [**FRIDA-Embeddings**](embeddings/) | Semantic search over text. V2 adds image retrieval and can return both a dense vector and per-token vectors. | [V1 model card](https://huggingface.co/ai-forever/FRIDA) · [V2 inference guide](embeddings/v2/inference/) · [V1 article on Habr (RU)](https://habr.com/ru/companies/sberdevices/articles/909924/) |
-| [**FRIDA-Decisions**](decisions/) | A ticket router, a passage reranker, or a classifier whose labels you describe in plain language. The model scores the options you give it. | [V1 quickstart](decisions/v1/#quickstart) · [Passage reranking notebook](decisions/v1/examples/rag_filtering.ipynb) · [V1 article on Habr (RU)](https://habr.com/ru/companies/sberbank/articles/1092056/) |
-| [**razvilka**](benchmarks/razvilka/) | Benchmark for structured decisions with 735 Russian-language examples across 15 tasks. | [Dataset](https://huggingface.co/datasets/artemsnegirev/razvilka) · [Evaluation notebook](benchmarks/razvilka/run_razvilka.ipynb) |
+- [**FRIDA**](https://huggingface.co/ai-forever/FRIDA) (2025) — the original Russian–English text embedding model for semantic search. [Habr article (RU)](https://habr.com/ru/companies/sberdevices/articles/909924/)
+- [**FRIDA-Decisions**](https://huggingface.co/ai-forever/FRIDA-Decisions) (October 2026) — scores choices, ratings, yes/no questions and rankings over text. [Quickstart](decisions/v1/#quickstart) · [Habr article (RU)](https://habr.com/ru/companies/sberbank/articles/1092056/)
+
+### V2 (in preparation)
+
+- [**FRIDA-Embeddings-V2-2B**](embeddings/v2/inference/) — text and image retrieval with dense and token-level embeddings.
+- [**FRIDA-Decisions-V2-1.8B**](decisions/) — a compact model for structured decisions over text and images.
+- [**FRIDA-Decisions-V2-28B-A2.5B**](decisions/) — a mixture-of-experts model for the same tasks, with 2.5B active parameters. An FP8 variant is also in preparation.
+
+## Benchmarks
+
+[**razvilka**](benchmarks/razvilka/) was released alongside the original FRIDA-Decisions in October 2026. It evaluates structured decisions on 735 Russian-language examples across 15 tasks. [Dataset](https://huggingface.co/datasets/artemsnegirev/razvilka) · [Evaluation notebook](benchmarks/razvilka/run_razvilka.ipynb)
 
 ## News
 
-- **In preparation** · FRIDA-Embeddings V2 for text and image retrieval, and FRIDA-Decisions V2 in two sizes (1.8B and 28B-A2.5B).
 - **6 October 2026** · FRIDA-Decisions 0.4.0 brought local inference to Apple Silicon with [MLX](decisions/v1/docs/backends.md#mlx-on-apple-silicon).
 
 [MIT license](LICENSE)
