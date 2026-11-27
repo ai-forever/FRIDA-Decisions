@@ -1,4 +1,8 @@
-# ![FRIDA — retrieval and structured decisions](assets/frida.svg)
+# FRIDA · Retrieval and structured decisions
+
+<p align="center">
+  <img src="assets/frida-mascot.jpg" width="520" alt="The FRIDA mascot holds up a bar chart and a check mark.">
+</p>
 
 A customer writes, *“I paid once. Why are there two charges on my card?”* **FRIDA-Embeddings** can find the help articles about duplicate payments. **FRIDA-Decisions** can rank those passages by how well they answer the question, or route the message straight to billing.
 
