@@ -21,7 +21,9 @@
 
 ## Benchmarks
 
-[**razvilka**](benchmarks/razvilka/) was released alongside the original FRIDA-Decisions in October 2026. It evaluates structured decisions on 735 Russian-language examples across 15 tasks. [Dataset](https://huggingface.co/datasets/artemsnegirev/razvilka) · [Evaluation notebook](benchmarks/razvilka/run_razvilka.ipynb)
+- [**ruMTEB**](https://huggingface.co/collections/ai-forever/ru-mteb) evaluates Russian-language text embeddings across seven task categories, including retrieval, classification and clustering.
+  Snegirev et al. (NAACL 2025), [*The Russian-focused embedders’ exploration: ruMTEB benchmark and Russian embedding model design*](https://aclanthology.org/2025.naacl-long.12/). [BibTeX](https://aclanthology.org/2025.naacl-long.12.bib)
+- [**razvilka**](benchmarks/razvilka/) was released alongside the original FRIDA-Decisions in October 2026. It evaluates structured decisions on 735 Russian-language examples across 15 tasks. [Dataset](https://huggingface.co/datasets/artemsnegirev/razvilka) · [Evaluation notebook](benchmarks/razvilka/run_razvilka.ipynb)
 
 ## News
 
