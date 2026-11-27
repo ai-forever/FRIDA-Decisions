@@ -31,5 +31,8 @@
 
 - **FRIDA V2** adds multimodal retrieval with Embeddings 2B and structured decisions over text and images with Decisions 1.8B and 28B-A2.5B. The Decisions package is now at version 0.5.0.
 - **6 October 2026** · FRIDA-Decisions 0.4.0 brought local inference to Apple Silicon with [MLX](decisions/v1/docs/backends.md#mlx-on-apple-silicon).
+- **4 October 2026** · FRIDA-Decisions 0.3.0 added asynchronous inference with [`AsyncJudge` and `VllmJudge`](decisions/v1/docs/backends.md#async-api).
+- **2 October 2026** · FRIDA-Decisions 0.2.0 added [vLLM serving](decisions/v1/docs/backends.md#vllm-server).
+- **2 October 2026** · FRIDA-Decisions 0.1.0 introduced structured decisions over text, with PyTorch and ONNX inference and the [razvilka benchmark](benchmarks/razvilka/).
 
 [MIT license](LICENSE)
