@@ -35,7 +35,7 @@ import traceback
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT), str(ROOT / "benchmarks" / "razvilka")]
+sys.path[:0] = [str(ROOT), str(ROOT.parents[1] / "benchmarks" / "razvilka")]
 
 import razvilka_eval as rz  # noqa: E402
 

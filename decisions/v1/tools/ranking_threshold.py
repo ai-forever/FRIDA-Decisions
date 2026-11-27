@@ -47,7 +47,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "benchmarks" / "razvilka"))
+sys.path.insert(0, str(ROOT.parents[1] / "benchmarks" / "razvilka"))
 
 import razvilka_eval as rz  # noqa: E402
 

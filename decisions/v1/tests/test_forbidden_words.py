@@ -16,7 +16,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-EXEMPT = {"model_card/README.md"}
+REPOSITORY = ROOT.parents[1] if ROOT.parts[-2:] == ("decisions", "v1") else ROOT
+MODEL_CARD = ROOT / "model_card" / "README.md"
 LOCAL = r"users[\\/]|\.py\b"                 # local paths and source file names
 
 
@@ -36,19 +37,19 @@ def repository_files() -> list[Path]:
     """Files that would be committed: tracked plus untracked-but-not-ignored."""
     try:
         out = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard"],
-                             cwd=ROOT, capture_output=True, text=True, check=True).stdout
-        return [ROOT / line for line in out.splitlines() if line and (ROOT / line).is_file()]
+                             cwd=REPOSITORY, capture_output=True, text=True, check=True).stdout
+        return [REPOSITORY / line for line in out.splitlines() if line and (REPOSITORY / line).is_file()]
     except (OSError, subprocess.CalledProcessError):
         skip = {".git", "_export", "__pycache__", ".pytest_cache"}
-        return [p for p in ROOT.rglob("*") if p.is_file() and not skip & set(p.parts)]
+        return [p for p in REPOSITORY.rglob("*") if p.is_file() and not skip & set(p.parts)]
 
 
 def test_no_forbidden_words_in_repository():
     pattern = forbidden_pattern()
     hits = []
     for path in repository_files():
-        rel = path.relative_to(ROOT).as_posix()
-        if rel in EXEMPT:
+        rel = path.relative_to(REPOSITORY).as_posix()
+        if path == MODEL_CARD:
             continue
         if pattern.search(rel):
             hits.append(f"{rel} (file name)")

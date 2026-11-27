@@ -20,7 +20,7 @@ tags:
 
 # FRIDA-Decisions
 
-[![Habr article](https://img.shields.io/badge/Habr-article%20(RU)-65A3BE?logo=habr&logoColor=white)](https://habr.com/ru/companies/sberbank/articles/1092056/) [![Code on GitHub](https://img.shields.io/badge/GitHub-FRIDA--Decisions-181717?logo=github&logoColor=white)](https://github.com/ai-forever/FRIDA-Decisions) [![Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Demo-Spaces-FFD21E)](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions) [![Benchmark](https://img.shields.io/badge/%F0%9F%A4%97%20Benchmark-razvilka-FFD21E)](https://huggingface.co/datasets/artemsnegirev/razvilka) [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) [![vLLM server](https://img.shields.io/badge/vLLM-server-30A2FF)](#vllm-server) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/ai-forever/FRIDA-Decisions/blob/main/LICENSE)
+[![Habr article](https://img.shields.io/badge/Habr-article%20(RU)-65A3BE?logo=habr&logoColor=white)](https://habr.com/ru/companies/sberbank/articles/1092056/) [![Code on GitHub](https://img.shields.io/badge/GitHub-FRIDA--Decisions-181717?logo=github&logoColor=white)](https://github.com/ai-forever/FRIDA-Decisions) [![Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Demo-Spaces-FFD21E)](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions) [![Benchmark](https://img.shields.io/badge/%F0%9F%A4%97%20Benchmark-razvilka-FFD21E)](https://huggingface.co/datasets/artemsnegirev/razvilka) [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/notebooks/quickstart.ipynb) [![vLLM server](https://img.shields.io/badge/vLLM-server-30A2FF)](#vllm-server) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/ai-forever/FRIDA-Decisions/blob/main/LICENSE)
 
 **FRIDA-Decisions** makes structured decisions over Russian text in a single encoder pass: pick one of K options, place a text on an ordinal scale, answer yes / no, or rank candidates. The options are written as text inside the request, so a new label set is a new JSON, not a new training run. No generation, no output tokens, no parsing: every answer is one of the declared options, with its confidence.
 
@@ -73,7 +73,7 @@ print(judge.judge(request)["answers"])
 
 CPU without PyTorch: `pip install "frida-decisions[onnx] @ git+..."` and `OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions")` — int8 weights and per-token int8 activations; it scores 0.891 on razvilka (the same decision as the GPU model on 726 of 735 items), and a 384-token request with 3 questions takes about 0.9 s on 6 CPU threads, roughly 2.5x faster than fp32.
 
-Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) · evaluation on razvilka [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/benchmarks/razvilka/run_razvilka.ipynb)
+Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/notebooks/quickstart.ipynb) · evaluation on razvilka [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/benchmarks/razvilka/run_razvilka.ipynb)
 
 ## vLLM server
 
@@ -115,7 +115,7 @@ Measured with the command above plus `--gpu-memory-utilization 0.45` (the card a
 
 ### Filtering `ranking` candidates by a threshold
 
-`probabilities` split one unit among the candidates, so they order but cannot filter. To keep only the relevant candidates, threshold `scores` against the request's own list (each score minus the mean of its candidates), not as raw values. The recipe, its numbers on razvilka and its limits are in the [repository README](https://github.com/ai-forever/FRIDA-Decisions#filtering-ranking-candidates-by-a-threshold); [`examples/quickstart.py`](https://github.com/ai-forever/FRIDA-Decisions/blob/main/examples/quickstart.py) and the [Colab notebook](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/notebooks/quickstart.ipynb) filter a retriever's output.
+`probabilities` split one unit among the candidates, so they order but cannot filter. To keep only the relevant candidates, threshold `scores` against the request's own list (each score minus the mean of its candidates), not as raw values. The recipe, its numbers on razvilka and its limits are in the [ranking guide](https://github.com/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/docs/requests.md#filtering-ranking-candidates-by-a-threshold); [`examples/quickstart.py`](https://github.com/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/examples/quickstart.py) and the [Colab notebook](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/notebooks/quickstart.ipynb) filter a retriever's output.
 
 ### Input length
 
@@ -199,14 +199,3 @@ GPU and Apple rows: median of 30 requests after warm-up, timing parsing, tokenis
 ## License
 
 MIT. Based on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (MIT).
-
-## Citation
-
-```bibtex
-@misc{frida_decisions_2026,
-  title  = {FRIDA-Decisions},
-  author = {{УЭСМО, SberAI}},
-  year   = {2026},
-  url    = {https://github.com/ai-forever/FRIDA-Decisions}
-}
-```

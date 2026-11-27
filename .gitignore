@@ -15,4 +15,4 @@ __pycache__/
 .ipynb_checkpoints/
 
 # local test results
-tests/_results/
+decisions/v1/tests/_results/

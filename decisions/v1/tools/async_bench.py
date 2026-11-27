@@ -30,7 +30,7 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT / "tests"), str(ROOT / "benchmarks" / "razvilka")]
+sys.path[:0] = [str(ROOT / "tests"), str(ROOT.parents[1] / "benchmarks" / "razvilka")]
 RESULTS = ROOT / "tests" / "_results"
 
 
