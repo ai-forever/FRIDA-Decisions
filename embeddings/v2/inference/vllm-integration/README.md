@@ -8,7 +8,9 @@ All tasks use native vLLM inputs. Select the output on `/pooling`:
 | `token_embed` | Multivector matrix in `response["data"][i]["data"]` |
 | `plugin` | Both named `dense` and `multivector` fields in `response["data"][i]` |
 
-The `joint_embeddings` endpoint plugin uses vLLM’s standard pooling route and
+The `joint_embeddings` plugin supports FRIDA-Embeddings-V2-2B. It registers the Qwen3.5-based `Qwen35JointEmbedding` architecture and loads the trained token projection from the checkpoint.
+
+The endpoint plugin uses vLLM’s standard pooling route and
 native chat/completion rendering. It selects the requested head on each HTTP
 request. Prefixes and chat formatting remain caller-controlled.
 
