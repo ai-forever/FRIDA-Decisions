@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="220" viewBox="0 0 960 220" role="img" aria-labelledby="title description">
+  <title id="title">FRIDA</title>
+  <desc id="description">Retrieval and structured decisions. A magnifying glass picks out a highlighted line from a stack of documents.</desc>
+  <defs>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1.1" fill="#b4bcab"/>
+    </pattern>
+    <clipPath id="frame"><rect width="960" height="220" rx="14"/></clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <rect width="960" height="220" fill="#f7f4e8"/>
+    <rect x="482" width="478" height="220" fill="url(#dots)"/>
+    <g font-family="Arial, Helvetica, sans-serif" fill="#192e29">
+      <text x="37" y="133" font-size="123" font-weight="800" letter-spacing="-6">FRIDA</text>
+      <text x="44" y="174" font-size="24">Retrieval and structured decisions</text>
+    </g>
+    <g stroke="#203832" stroke-width="2.5" stroke-linejoin="round">
+      <g transform="rotate(-15 659 120)">
+        <rect x="601" y="30" width="128" height="162" rx="4" fill="#e59678"/>
+        <path d="M616 58h70m-70 13h88m-88 13h75" fill="none"/>
+      </g>
+      <g transform="rotate(-5 707 114)">
+        <rect x="641" y="22" width="132" height="166" rx="4" fill="#aad8ac"/>
+        <path d="M658 47h64m-64 13h87m-87 13h73" fill="none"/>
+      </g>
+      <g transform="rotate(9 767 110)">
+        <path d="M696 12h106l32 32v147H696z" fill="#fffdf6"/>
+        <path d="M802 12v32h32" fill="#ecdcc8"/>
+        <path d="M711 43h53" stroke-width="5"/>
+        <path d="M711 62h95m-95 11h75m-75 12h90m-90 44h66m-66 12h89m-89 12h62" fill="none" stroke="#839087"/>
+      </g>
+      <path d="m809 145 51 48" fill="none" stroke-width="18" stroke-linecap="round"/>
+      <path d="m810 146 48 45" fill="none" stroke="#e89774" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="780" cy="114" r="46" fill="#fffdf6" stroke-width="5"/>
+      <g transform="rotate(9 780 114)">
+        <path d="M751 99h50m-45 31h46" stroke="#a9afa4" stroke-linecap="round"/>
+        <rect x="744" y="106" width="72" height="15" rx="3" fill="#a8dca9" stroke="none"/>
+        <path d="M750 114h56" stroke-linecap="round" stroke-width="3.5"/>
+      </g>
+    </g>
+  </g>
+</svg>
