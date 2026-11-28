@@ -23,7 +23,7 @@ def decode(body: bytes) -> dict[str, Any]:
     decoded = []
     for item in metadata["data"]:
         heads = {}
-        for name in ("dense", "colbert"):
+        for name in ("dense", "multivector"):
             part = item[name]
             lo, hi = part["start"], part["end"]
             if lo != offset or hi < lo or hi > len(data):
