@@ -8,13 +8,13 @@ The Python package `frida-decisions` scores structured questions about Russian a
 
 ```bash
 # PyTorch backend (GPU or CPU)
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA@v0.4.0"
 # int8 ONNX backend for CPU, without torch
-pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
+pip install "frida-decisions[onnx] @ git+https://github.com/ai-forever/FRIDA@v0.4.0"
 # MLX backend for Apple Silicon, without torch
-pip install "frida-decisions[mlx] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
+pip install "frida-decisions[mlx] @ git+https://github.com/ai-forever/FRIDA@v0.4.0"
 # vLLM server (GPU, Linux)
-pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
+pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA@v0.4.0"
 ```
 
 The core package needs only `numpy`, `tokenizers`, `safetensors` and `huggingface_hub`; each backend comes with its extra (`[torch]`, `[onnx]`, `[mlx]`, `[vllm]`). Python 3.10+. The weights are downloaded from the Hugging Face Hub on first use.
@@ -49,7 +49,7 @@ Several independent requests (different texts) can go in one call; you get one r
 responses = judge.judge_batch([request_1, request_2, request_3])
 ```
 
-More in [`examples/quickstart.py`](examples/quickstart.py) and the notebook [`notebooks/quickstart.ipynb`](notebooks/quickstart.ipynb) — run it in Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/notebooks/quickstart.ipynb)
+More in [`examples/quickstart.py`](examples/quickstart.py) and the notebook [`notebooks/quickstart.ipynb`](notebooks/quickstart.ipynb) — run it in Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA/blob/main/decisions/v1/notebooks/quickstart.ipynb)
 
 Worked scenarios (routing, guardrails, retrieval, tool choice, and others) are indexed in [`examples/README.md`](examples/README.md).
 

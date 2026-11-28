@@ -20,7 +20,7 @@ tags:
 
 # FRIDA-Decisions
 
-[![Habr article](https://img.shields.io/badge/Habr-article%20(RU)-65A3BE?logo=habr&logoColor=white)](https://habr.com/ru/companies/sberbank/articles/1092056/) [![Code on GitHub](https://img.shields.io/badge/GitHub-FRIDA--Decisions-181717?logo=github&logoColor=white)](https://github.com/ai-forever/FRIDA-Decisions) [![Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Demo-Spaces-FFD21E)](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions) [![Benchmark](https://img.shields.io/badge/%F0%9F%A4%97%20Benchmark-razvilka-FFD21E)](https://huggingface.co/datasets/artemsnegirev/razvilka) [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/notebooks/quickstart.ipynb) [![vLLM server](https://img.shields.io/badge/vLLM-server-30A2FF)](#vllm-server) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/ai-forever/FRIDA-Decisions/blob/main/LICENSE)
+[![Habr article](https://img.shields.io/badge/Habr-article%20(RU)-65A3BE?logo=habr&logoColor=white)](https://habr.com/ru/companies/sberbank/articles/1092056/) [![Code on GitHub](https://img.shields.io/badge/GitHub-FRIDA--Decisions-181717?logo=github&logoColor=white)](https://github.com/ai-forever/FRIDA) [![Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Demo-Spaces-FFD21E)](https://huggingface.co/spaces/ai-forever/FRIDA-Decisions) [![Benchmark](https://img.shields.io/badge/%F0%9F%A4%97%20Benchmark-razvilka-FFD21E)](https://huggingface.co/datasets/artemsnegirev/razvilka) [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA/blob/main/decisions/v1/notebooks/quickstart.ipynb) [![vLLM server](https://img.shields.io/badge/vLLM-server-30A2FF)](#vllm-server) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/ai-forever/FRIDA/blob/main/LICENSE)
 
 **FRIDA-Decisions** makes structured decisions over Russian text in a single encoder pass: pick one of K options, place a text on an ordinal scale, answer yes / no, or rank candidates. The options are written as text inside the request, so a new label set is a new JSON, not a new training run. No generation, no output tokens, no parsing: every answer is one of the declared options, with its confidence.
 
@@ -35,7 +35,7 @@ It is built on [ai-forever/FRIDA](https://huggingface.co/ai-forever/FRIDA) (T5 e
 ## Quickstart
 
 ```bash
-pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
+pip install "frida-decisions[torch] @ git+https://github.com/ai-forever/FRIDA@v0.4.0"
 ```
 
 ```python
@@ -73,21 +73,21 @@ print(judge.judge(request)["answers"])
 
 CPU without PyTorch: `pip install "frida-decisions[onnx] @ git+..."` and `OnnxJudge.from_pretrained("ai-forever/FRIDA-Decisions")` — int8 weights and per-token int8 activations; it scores 0.891 on razvilka (the same decision as the GPU model on 726 of 735 items), and a 384-token request with 3 questions takes about 0.9 s on 6 CPU threads, roughly 2.5x faster than fp32.
 
-Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/notebooks/quickstart.ipynb) · evaluation on razvilka [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/benchmarks/razvilka/run_razvilka.ipynb)
+Notebooks: quickstart [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA/blob/main/decisions/v1/notebooks/quickstart.ipynb) · evaluation on razvilka [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ai-forever/FRIDA/blob/main/benchmarks/razvilka/run_razvilka.ipynb)
 
 ## vLLM server
 
 For many users at once (Linux, GPU). The server batches requests together and keeps the texts it has read in vLLM's prefix cache, so a follow-up question about a text costs only its own tokens.
 
 ```bash
-pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA-Decisions@v0.4.0"
+pip install "frida-decisions[vllm] @ git+https://github.com/ai-forever/FRIDA@v0.4.0"
 vllm serve ai-forever/FRIDA-Decisions \
   --hf-overrides '{"architectures": ["FridaDecisionsModel"]}' \
   --io-processor-plugin frida_decisions \
   --no-enable-chunked-prefill --enforce-eager --max-model-len 2048
 ```
 
-`POST /pooling` with the request under `data` returns the same response as `Judge` ([client example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.4.0/examples/vllm_client.py)).
+`POST /pooling` with the request under `data` returns the same response as `Judge` ([client example](https://github.com/ai-forever/FRIDA/blob/v0.4.0/examples/vllm_client.py)).
 
 | one RTX 5060 Ti, bf16, vLLM 0.29 | |
 |---|--:|
@@ -100,9 +100,9 @@ vllm serve ai-forever/FRIDA-Decisions \
 
 Measured with the command above plus `--gpu-memory-utilization 0.45` (the card also drives a display), client on the same machine, after warm-up; the first request after a start takes about 0.3 s. vLLM and PyTorch differ on 2 razvilka items, both near-ties in fp32.
 
-**Async API, no server.** `await judge.judge(request)` inside your own program: `AsyncJudge` wraps the PyTorch (or ONNX, or MLX) judge on any OS, `VllmJudge` runs the vLLM engine in your process (Linux, GPU) with the same batching and cache as the server ([example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.4.0/examples/async_judge.py)). Which is faster depends on the load: on the same card, a burst of 256 short tickets runs at ≈187 requests/s with `AsyncJudge` over PyTorch and ≈126 with `VllmJudge`; razvilka's mix of lengths with 32 requests in flight, at ≈58 and ≈69 (`VllmJudge` with 45 % of the GPU, medians of alternating runs).
+**Async API, no server.** `await judge.judge(request)` inside your own program: `AsyncJudge` wraps the PyTorch (or ONNX, or MLX) judge on any OS, `VllmJudge` runs the vLLM engine in your process (Linux, GPU) with the same batching and cache as the server ([example](https://github.com/ai-forever/FRIDA/blob/v0.4.0/examples/async_judge.py)). Which is faster depends on the load: on the same card, a burst of 256 short tickets runs at ≈187 requests/s with `AsyncJudge` over PyTorch and ≈126 with `VllmJudge`; razvilka's mix of lengths with 32 requests in flight, at ≈58 and ≈69 (`VllmJudge` with 45 % of the GPU, medians of alternating runs).
 
-**Apple Silicon.** `MlxJudge` (`frida-decisions[mlx]`, contributed by [@akolotov](https://github.com/akolotov)) runs the model in MLX, without torch. On an Apple M4 Pro, in float32 it makes the same 735 razvilka decisions as PyTorch float32 on CPU; in bfloat16, 733 of them, with the margin error of bfloat16 in PyTorch ([example](https://github.com/ai-forever/FRIDA-Decisions/blob/v0.4.0/examples/mlx_quickstart.py)). PyTorch itself also runs on a Mac with `device="mps"`.
+**Apple Silicon.** `MlxJudge` (`frida-decisions[mlx]`, contributed by [@akolotov](https://github.com/akolotov)) runs the model in MLX, without torch. On an Apple M4 Pro, in float32 it makes the same 735 razvilka decisions as PyTorch float32 on CPU; in bfloat16, 733 of them, with the margin error of bfloat16 in PyTorch ([example](https://github.com/ai-forever/FRIDA/blob/v0.4.0/examples/mlx_quickstart.py)). PyTorch itself also runs on a Mac with `device="mps"`.
 
 ## Question types
 
@@ -115,7 +115,7 @@ Measured with the command above plus `--gpu-memory-utilization 0.45` (the card a
 
 ### Filtering `ranking` candidates by a threshold
 
-`probabilities` split one unit among the candidates, so they order but cannot filter. To keep only the relevant candidates, threshold `scores` against the request's own list (each score minus the mean of its candidates), not as raw values. The recipe, its numbers on razvilka and its limits are in the [ranking guide](https://github.com/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/docs/requests.md#filtering-ranking-candidates-by-a-threshold); [`examples/quickstart.py`](https://github.com/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/examples/quickstart.py) and the [Colab notebook](https://colab.research.google.com/github/ai-forever/FRIDA-Decisions/blob/main/decisions/v1/notebooks/quickstart.ipynb) filter a retriever's output.
+`probabilities` split one unit among the candidates, so they order but cannot filter. To keep only the relevant candidates, threshold `scores` against the request's own list (each score minus the mean of its candidates), not as raw values. The recipe, its numbers on razvilka and its limits are in the [ranking guide](https://github.com/ai-forever/FRIDA/blob/main/decisions/v1/docs/requests.md#filtering-ranking-candidates-by-a-threshold); [`examples/quickstart.py`](https://github.com/ai-forever/FRIDA/blob/main/decisions/v1/examples/quickstart.py) and the [Colab notebook](https://colab.research.google.com/github/ai-forever/FRIDA/blob/main/decisions/v1/notebooks/quickstart.ipynb) filter a retriever's output.
 
 ### Input length
 
@@ -138,7 +138,7 @@ The defaults ship with the weights in `decisions_config.json`; edit it in a loca
 
 ## Benchmarks
 
-**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA-Decisions/tree/v0.4.0/benchmarks/razvilka)).
+**razvilka** — 735 Russian items, 15 tasks (routing, intents, topic and sentiment classification, moderation, relevance ranking), all four question types, gold from published datasets. Every model answers the same items, each in its own input format, and all answers are scored by the same rule ([razvilka_eval.py](https://github.com/ai-forever/FRIDA/tree/v0.4.0/benchmarks/razvilka)).
 
 | model | parameters | accuracy |
 |---|--:|--:|
